@@ -1,0 +1,13 @@
+node_modules
+dist
+*.log
+.DS_Store
+.idea
+.vscode/*
+
+# Env: nunca commitar credenciais. .env.production é exceção — só leva a URL
+# e a anon key do Supabase, que já vão expostas no bundle (nunca service_role).
+.env
+.env.*
+!.env.example
+!.env.production

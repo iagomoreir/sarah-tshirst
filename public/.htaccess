@@ -1,0 +1,14 @@
+# SPA: qualquer rota que não seja arquivo real cai no index.html
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# index.html nunca em cache (os assets têm hash no nome)
+<FilesMatch "^index\.html$">
+  Header set Cache-Control "no-cache"
+</FilesMatch>
