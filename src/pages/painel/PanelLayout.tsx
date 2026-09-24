@@ -10,9 +10,9 @@ export function PanelLayout() {
   const location = useLocation()
 
   const links = [
-    { to: '/painel', label: 'Pedidos', icon: Package, end: true },
-    { to: '/painel/produtos', label: 'Produtos', icon: TShirt, end: false },
-    ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Cadastro', icon: Users, end: false }] : []),
+    { to: '/painel', label: 'Commandes', icon: Package, end: true },
+    { to: '/painel/produtos', label: 'Modèles', icon: TShirt, end: false },
+    ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Utilisateurs', icon: Users, end: false }] : []),
   ]
 
   return (
@@ -35,9 +35,9 @@ export function PanelLayout() {
         <div className="panel-user">
           <p>
             {staff?.name}
-            <small className="muted">{staff?.role === 'webmaster' ? 'Webmaster' : 'Loja'}</small>
+            <small className="muted">{staff?.role === 'webmaster' ? 'Webmaster' : 'Boutique'}</small>
           </p>
-          <button className="icon-button" onClick={signOut} aria-label="Sair">
+          <button className="icon-button" onClick={signOut} aria-label="Se déconnecter">
             <SignOut size={20} weight="light" />
           </button>
         </div>

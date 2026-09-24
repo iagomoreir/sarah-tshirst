@@ -38,14 +38,14 @@ export function ProductsPage() {
   return (
     <div>
       <header className="panel-head">
-        <h1>Modelos</h1>
+        <h1>Modèles</h1>
         <PillButton onClick={() => setDraft({ ...EMPTY, sort: products.length + 1 })} icon={<Plus size={16} weight="bold" />}>
-          Novo modelo
+          Nouveau modèle
         </PillButton>
       </header>
 
       {loading && <div className="sk sk-order" aria-hidden />}
-      {!loading && products.length === 0 && <p className="column-empty">Nenhum produto ainda. Cadastre o primeiro.</p>}
+      {!loading && products.length === 0 && <p className="column-empty">Aucun modèle pour l’instant. Ajoutez le premier.</p>}
 
       <ul className="product-list">
         {products.map((p, i) => (
@@ -67,7 +67,7 @@ export function ProductsPage() {
                   .map((t) => `${TECHNIQUES[t]} ${formatMoney(p.prices[t]!)}`)
                   .join(' · ')}
               </span>
-              <span className={p.active ? 'badge on' : 'badge'}>{p.active ? 'No site' : 'Oculto'}</span>
+              <span className={p.active ? 'badge on' : 'badge'}>{p.active ? 'En ligne' : 'Masqué'}</span>
             </button>
           </motion.li>
         ))}
@@ -108,7 +108,7 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
     const path = `${crypto.randomUUID()}.${ext}`
     const { error } = await supabase.storage.from('products').upload(path, file, { cacheControl: '31536000' })
     setBusy(false)
-    if (error) return setError('Falha no envio da foto.')
+    if (error) return setError('Échec de l’envoi de la photo.')
     set('image_url', supabase.storage.from('products').getPublicUrl(path).data.publicUrl)
   }
 
@@ -127,13 +127,13 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
       const raw = prices[t].replace(/\s|€/g, '').replace(',', '.')
       if (!raw) continue
       const cents = Math.round(Number(raw) * 100)
-      if (!Number.isFinite(cents) || cents <= 0) return setError(`Preço ${TECHNIQUES[t]} inválido.`)
+      if (!Number.isFinite(cents) || cents <= 0) return setError(`Prix ${TECHNIQUES[t]} invalide.`)
       parsed[t] = cents
     }
     const sizeList = sizes.split(/[,\s]+/).map((s) => s.trim().toUpperCase()).filter(Boolean)
-    if (!draft.name.trim()) return setError('Dê um nome ao produto.')
-    if (Object.keys(parsed).length === 0) return setError('Informe o preço de ao menos uma técnica.')
-    if (sizeList.length === 0) return setError('Informe ao menos um tamanho.')
+    if (!draft.name.trim()) return setError('Donnez un nom au modèle.')
+    if (Object.keys(parsed).length === 0) return setError('Indiquez le prix d’au moins une technique.')
+    if (sizeList.length === 0) return setError('Indiquez au moins une taille.')
     const colors = draft.colors.filter((c) => c.name.trim())
 
     const row = { ...draft, name: draft.name.trim(), prices: parsed, sizes: sizeList, colors }
@@ -143,16 +143,16 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
       ? await supabase.from('products').update(row).eq('id', draft.id)
       : await supabase.from('products').insert(row)
     setBusy(false)
-    if (error) return setError('Não foi possível salvar.')
+    if (error) return setError('Enregistrement impossible.')
     onSaved()
   }
 
   async function remove() {
-    if (!draft.id || !confirm(`Excluir "${draft.name}"? Pedidos antigos continuam com o nome salvo.`)) return
+    if (!draft.id || !confirm(`Supprimer "${draft.name}"? Les anciennes commandes gardent le nom enregistré.`)) return
     setBusy(true)
     const { error } = await supabase.from('products').delete().eq('id', draft.id)
     setBusy(false)
-    if (error) return setError('Não foi possível excluir. Tente só ocultar do site.')
+    if (error) return setError('Suppression impossible. Masquez-le plutôt du site.')
     onSaved()
   }
 
@@ -167,74 +167,74 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Editar produto"
+        aria-label="Modifier le modèle"
       >
         <header className="drawer-head">
-          <h2>{draft.id ? 'Editar produto' : 'Novo produto'}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Fechar">
+          <h2>{draft.id ? 'Modifier le modèle' : 'Nouveau modèle'}</h2>
+          <button className="icon-button" onClick={onClose} aria-label="Fermer">
             <X size={20} weight="light" />
           </button>
         </header>
         <form className="detail" onSubmit={save}>
           <label className="upload">
             {draft.image_url ? <img src={draft.image_url} alt="" /> : <ImageIcon size={32} weight="thin" />}
-            <span>{draft.image_url ? 'Trocar foto' : 'Enviar foto'}</span>
+            <span>{draft.image_url ? 'Changer la photo' : 'Ajouter une photo'}</span>
             <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} hidden />
           </label>
           <label className="field">
-            <span>Nome</span>
+            <span>Nom</span>
             <input value={draft.name} onChange={(e) => set('name', e.target.value)} required />
           </label>
           <div className="field-row">
             {(Object.keys(TECHNIQUES) as Technique[]).map((t) => (
               <label className="field" key={t}>
-                <span>Preço {TECHNIQUES[t]} (€)</span>
-                <input value={prices[t]} onChange={(e) => setPrices((p) => ({ ...p, [t]: e.target.value }))} inputMode="decimal" placeholder="vazio = indisponível" />
+                <span>Prix {TECHNIQUES[t]} (€)</span>
+                <input value={prices[t]} onChange={(e) => setPrices((p) => ({ ...p, [t]: e.target.value }))} inputMode="decimal" placeholder="vide = indisponible" />
               </label>
             ))}
           </div>
           <label className="field">
-            <span>Descrição</span>
+            <span>Description</span>
             <textarea rows={3} value={draft.description} onChange={(e) => set('description', e.target.value)} />
           </label>
           <label className="field">
-            <span>Tamanhos</span>
+            <span>Tailles</span>
             <input value={sizes} onChange={(e) => setSizes(e.target.value)} />
-            <small className="muted">Separados por vírgula. Ex.: S, M, L, XL, 2XL, 3XL</small>
+            <small className="muted">Séparées par des virgules. Ex. : S, M, L, XL, 2XL, 3XL</small>
           </label>
           <fieldset className="field">
-            <legend>Cores</legend>
+            <legend>Couleurs</legend>
             {draft.colors.map((c, i) => (
               <div className="color-row" key={i}>
-                <input type="color" value={c.hex} onChange={(e) => setColor(i, { hex: e.target.value })} aria-label="Tom" />
-                <input value={c.name} onChange={(e) => setColor(i, { name: e.target.value })} placeholder="Nome da cor" aria-label="Nome da cor" />
-                <button type="button" className="icon-button small" onClick={() => set('colors', draft.colors.filter((_, idx) => idx !== i))} aria-label="Remover cor">
+                <input type="color" value={c.hex} onChange={(e) => setColor(i, { hex: e.target.value })} aria-label="Teinte" />
+                <input value={c.name} onChange={(e) => setColor(i, { name: e.target.value })} placeholder="Nom de la couleur" aria-label="Nom de la couleur" />
+                <button type="button" className="icon-button small" onClick={() => set('colors', draft.colors.filter((_, idx) => idx !== i))} aria-label="Retirer la couleur">
                   <Trash size={16} weight="light" />
                 </button>
               </div>
             ))}
             <button type="button" className="link-button" onClick={() => set('colors', [...draft.colors, { name: '', hex: '#ffffff' }])}>
-              + Adicionar cor
+              + Ajouter une couleur
             </button>
           </fieldset>
           <div className="field-row">
             <label className="toggle">
               <input type="checkbox" checked={draft.active} onChange={(e) => set('active', e.target.checked)} />
-              <span>Mostrar no site</span>
+              <span>Afficher sur le site</span>
             </label>
             <label className="field">
-              <span>Ordem</span>
+              <span>Ordre</span>
               <input type="number" value={draft.sort} onChange={(e) => set('sort', Number(e.target.value))} />
             </label>
           </div>
           {error && <p className="field-error" role="alert">{error}</p>}
           <div className="drawer-foot">
             <PillButton type="submit" className="full" disabled={busy}>
-              {busy ? 'Salvando...' : 'Salvar'}
+              {busy ? 'Enregistrement...' : 'Enregistrer'}
             </PillButton>
             {draft.id && (
               <button type="button" className="link-button danger" onClick={remove} disabled={busy}>
-                Excluir produto
+                Supprimer le modèle
               </button>
             )}
           </div>
@@ -262,11 +262,11 @@ function OptionsEditor() {
 
   return (
     <section className="options-editor">
-      <h2 className="subhead">Opções (por peça)</h2>
+      <h2 className="subhead">Options (par pièce)</h2>
       <ul className="product-list">
         {options.map((o) => (
           <li key={o.id} className="option-row">
-            <input className="plain-input" defaultValue={o.name} onBlur={(e) => e.target.value !== o.name && save(o, { name: e.target.value })} aria-label="Nome da opção" />
+            <input className="plain-input" defaultValue={o.name} onBlur={(e) => e.target.value !== o.name && save(o, { name: e.target.value })} aria-label="Nom de l’option" />
             <label className="price-input">
               <input
                 defaultValue={(o.price_cents / 100).toFixed(2).replace('.', ',')}
@@ -275,13 +275,13 @@ function OptionsEditor() {
                   const cents = Math.round(Number(e.target.value.replace(',', '.')) * 100)
                   if (Number.isFinite(cents) && cents >= 0 && cents !== o.price_cents) save(o, { price_cents: cents })
                 }}
-                aria-label="Preço"
+                aria-label="Prix"
               />
               <span>€</span>
             </label>
             <label className="toggle">
               <input type="checkbox" checked={o.active} onChange={(e) => save(o, { active: e.target.checked })} />
-              <span>{saving === o.id ? 'Salvando...' : 'Ativa'}</span>
+              <span>{saving === o.id ? 'Enregistrement...' : 'Active'}</span>
             </label>
           </li>
         ))}

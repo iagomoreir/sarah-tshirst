@@ -9,8 +9,8 @@ export function NewOrderPage() {
   return (
     <div>
       <header className="panel-head">
-        <h1>Novo pedido</h1>
-        <p className="muted small">Dica: copie as linhas da planilha e cole na tabela.</p>
+        <h1>Nouvelle commande</h1>
+        <p className="muted small">Astuce : copiez les lignes du tableau Excel et collez-les dans le tableau.</p>
       </header>
       {loading ? <div className="sk sheet-sk" /> : <OrderForm catalog={catalog} mode="painel" onDone={() => navigate('/painel')} />}
     </div>

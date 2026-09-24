@@ -24,7 +24,7 @@ export function OrdersPage() {
       .order('position', { referencedTable: 'order_items' })
       .order('created_at', { ascending: false })
       .limit(300)
-    if (error) setError('Não foi possível carregar os pedidos.')
+    if (error) setError('Impossible de charger les commandes.')
     else setOrders((data as Order[]) ?? [])
     setLoading(false)
   }, [])
@@ -45,7 +45,7 @@ export function OrdersPage() {
     setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, ...patch } : o)))
     const { error } = await supabase.from('orders').update(patch).eq('id', order.id)
     if (error) {
-      setError('Não foi possível salvar. Recarregando...')
+      setError('Enregistrement impossible. Rechargement...')
       load()
     }
   }
@@ -61,14 +61,14 @@ export function OrdersPage() {
   return (
     <div>
       <header className="panel-head">
-        <h1>Pedidos</h1>
+        <h1>Commandes</h1>
         <Link to="/painel/novo" className="pill pill-solid">
-          <span>Novo pedido</span>
+          <span>Nouvelle commande</span>
           <span className="pill-icon"><Plus size={16} weight="bold" /></span>
         </Link>
         <label className="toggle">
           <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />
-          <span>Mostrar cancelados</span>
+          <span>Afficher les annulées</span>
         </label>
       </header>
       {error && <p className="notice error">{error}</p>}
@@ -83,7 +83,7 @@ export function OrdersPage() {
                   {STATUS_LABELS[status]} <span className="count">{list.length}</span>
                 </h2>
                 {loading && <div className="sk sk-order" aria-hidden />}
-                {!loading && list.length === 0 && <p className="column-empty">Nada aqui.</p>}
+                {!loading && list.length === 0 && <p className="column-empty">Rien ici.</p>}
                 <AnimatePresence>
                   {list.map((order) => (
                     <motion.article
@@ -103,7 +103,7 @@ export function OrdersPage() {
                         <p>{order.unit || order.contact_name}</p>
                         {order.unit && <p className="muted small">{order.contact_name}</p>}
                         <p className="muted small">
-                          {order.pieces} peça(s), {formatMoney(order.total_cents)}
+                          {order.pieces} pièce(s), {formatMoney(order.total_cents)}
                         </p>
                       </button>
                       {status !== 'cancelado' && (
@@ -112,7 +112,7 @@ export function OrdersPage() {
                             className="icon-button small"
                             disabled={status === STATUS_FLOW[0]}
                             onClick={() => move(order, -1)}
-                            aria-label="Voltar etapa"
+                            aria-label="Étape précédente"
                           >
                             <ArrowLeft size={16} />
                           </button>
@@ -120,7 +120,7 @@ export function OrdersPage() {
                             className="icon-button small"
                             disabled={status === STATUS_FLOW[STATUS_FLOW.length - 1]}
                             onClick={() => move(order, 1)}
-                            aria-label="Avançar etapa"
+                            aria-label="Étape suivante"
                           >
                             <ArrowRight size={16} />
                           </button>
@@ -167,18 +167,18 @@ function OrderDetail({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={`Pedido ${order.number}`}
+        aria-label={`Commande ${order.number}`}
       >
         <header className="drawer-head">
-          <h2>Pedido #{order.number}</h2>
+          <h2>Commande n° {order.number}</h2>
           <div className="head-actions no-print">
-            <button className="icon-button" onClick={() => downloadText(`commande-${order.number}.csv`, itemsToCsv(order.order_items))} aria-label="Baixar planilha CSV" title="Baixar planilha (CSV)">
+            <button className="icon-button" onClick={() => downloadText(`commande-${order.number}.csv`, itemsToCsv(order.order_items))} aria-label="Télécharger le tableau CSV" title="Télécharger le tableau (CSV)">
               <DownloadSimple size={20} weight="light" />
             </button>
-            <button className="icon-button" onClick={() => window.print()} aria-label="Imprimir" title="Imprimir ficha de produção">
+            <button className="icon-button" onClick={() => window.print()} aria-label="Imprimer" title="Imprimer la fiche de production">
               <Printer size={20} weight="light" />
             </button>
-            <button className="icon-button" onClick={onClose} aria-label="Fechar">
+            <button className="icon-button" onClick={onClose} aria-label="Fermer">
               <X size={20} weight="light" />
             </button>
           </div>
@@ -200,7 +200,7 @@ function OrderDetail({
               )}
             </p>
             <p className="muted small">
-              {formatDate(order.created_at)} · {order.source === 'painel' ? 'lançado no painel' : 'pelo site'}
+              {formatDate(order.created_at)} · {order.source === 'painel' ? 'saisie dans le panneau' : 'via le site'}
             </p>
           </div>
 
@@ -208,7 +208,7 @@ function OrderDetail({
             <table className="summary-table">
               <thead>
                 <tr>
-                  <th>Produção</th>
+                  <th>Production</th>
                   {summary.sizes.map((s) => <th key={s}>{s}</th>)}
                   <th>Total</th>
                 </tr>
@@ -242,12 +242,12 @@ function OrderDetail({
                   <th>#</th>
                   <th>Grade</th>
                   <th>Nom</th>
-                  <th>Modelo</th>
-                  <th>Tam.</th>
-                  <th>Cor</th>
-                  <th>Qtd</th>
-                  <th>Opções</th>
-                  <th>Obs.</th>
+                  <th>Modèle</th>
+                  <th>Taille</th>
+                  <th>Couleur</th>
+                  <th>Qté</th>
+                  <th>Options</th>
+                  <th>Remarques</th>
                   <th className="num">Total</th>
                 </tr>
               </thead>
@@ -271,18 +271,18 @@ function OrderDetail({
           </div>
 
           <p className="total">
-            <span>{order.pieces} peça(s)</span>
+            <span>{order.pieces} pièce(s)</span>
             <strong>{formatMoney(order.total_cents)}</strong>
           </p>
           {order.notes && (
             <div className="detail-notes">
-              <p className="muted small">Observação do cliente</p>
+              <p className="muted small">Remarque du client</p>
               <p>{order.notes}</p>
             </div>
           )}
           <div className="field-row no-print">
             <label className="field">
-              <span>Etapa</span>
+              <span>Étape</span>
               <select value={order.status} onChange={(e) => onUpdate({ status: e.target.value as OrderStatus })}>
                 {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((s) => (
                   <option key={s} value={s}>
@@ -293,9 +293,9 @@ function OrderDetail({
             </label>
           </div>
           <label className="field no-print">
-            <span>Nota interna</span>
+            <span>Note interne</span>
             <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} onBlur={() => note !== order.internal_note && onUpdate({ internal_note: note })} />
-            <small className="muted">Só a equipe vê. Salva ao sair do campo.</small>
+            <small className="muted">Visible uniquement par l’équipe. Enregistrée en quittant le champ.</small>
           </label>
         </div>
       </motion.aside>

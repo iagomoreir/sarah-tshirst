@@ -171,7 +171,7 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.01em;
   font-weight: 700;
-  line-height: 1.08;
+  line-height: 1.14;
 }
 
 .accent-text {
@@ -1337,6 +1337,18 @@ img {
   overflow: hidden;
 }
 
+/* O overlay anima opacidade, o que anula o backdrop-filter dos filhos:
+   gavetas e diálogos usam superfície sólida em vez de vidro. */
+.overlay .glass {
+  background: var(--surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.detail > * {
+  flex-shrink: 0;
+}
+
 .drawer.wide {
   width: min(560px, 100vw);
 }
@@ -2174,5 +2186,20 @@ img {
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
+  }
+}
+
+.lines-table td:nth-child(4),
+.lines-table td:nth-child(6) {
+  white-space: nowrap;
+}
+
+.submit-actions .link-button {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .submit-bar > p.muted {
+    display: none;
   }
 }

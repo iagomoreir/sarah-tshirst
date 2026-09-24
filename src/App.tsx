@@ -14,7 +14,7 @@ export default function App() {
       <Route
         path="/painel/*"
         element={
-          <Suspense fallback={<p className="muted center-page">Carregando…</p>}>
+          <Suspense fallback={<p className="muted center-page">Chargement…</p>}>
             <PanelApp />
           </Suspense>
         }

@@ -33,19 +33,19 @@ export function LoginPage() {
         transition={{ duration: 0.7, ease }}
       >
         <h1>
-          <WordsReveal text="Painel da loja" />
+          <WordsReveal text="Espace boutique" />
         </h1>
         <label className="field">
           <span>E-mail</span>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
         </label>
         <label className="field">
-          <span>Senha</span>
+          <span>Mot de passe</span>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
         </label>
         {error && <p className="field-error" role="alert">{error}</p>}
         <PillButton type="submit" className="full" disabled={busy} icon={<SignIn size={16} weight="bold" />}>
-          {busy ? 'Entrando...' : 'Entrar'}
+          {busy ? 'Connexion...' : 'Se connecter'}
         </PillButton>
       </motion.form>
     </div>

@@ -4,13 +4,13 @@ import { useAuth } from './auth'
 export function ProtectedRoute({ webmasterOnly = false }: { webmasterOnly?: boolean }) {
   const { session, staff, loading, signOut } = useAuth()
 
-  if (loading) return <p className="muted center-page">Carregando…</p>
+  if (loading) return <p className="muted center-page">Chargement…</p>
   if (!session) return <Navigate to="/painel/login" replace />
   if (!staff) {
     return (
       <div className="center-page">
-        <p>Esta conta não tem acesso ao painel.</p>
-        <button className="btn" onClick={signOut}>Sair</button>
+        <p>Ce compte n’a pas accès au panneau.</p>
+        <button className="btn" onClick={signOut}>Se déconnecter</button>
       </div>
     )
   }

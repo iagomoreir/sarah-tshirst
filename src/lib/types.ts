@@ -77,11 +77,11 @@ export const TECHNIQUES: Record<Technique, string> = {
 }
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  novo: 'Novo',
-  em_producao: 'Em produção',
-  pronto: 'Pronto',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
+  novo: 'Nouvelle',
+  em_producao: 'En production',
+  pronto: 'Prête',
+  entregue: 'Livrée',
+  cancelado: 'Annulée',
 }
 
 export const STATUS_FLOW: OrderStatus[] = ['novo', 'em_producao', 'pronto', 'entregue']

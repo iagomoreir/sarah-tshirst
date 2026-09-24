@@ -104,7 +104,7 @@ export function OrderForm({ catalog, mode, onDone }: { catalog: Catalog; mode: '
   return (
     <form className="order-form" onSubmit={submit} noValidate>
       <fieldset className="contact-card">
-        <legend className="display">{mode === 'site' ? 'Responsable de la commande' : 'Cliente'}</legend>
+        <legend className="display">{mode === 'site' ? 'Responsable de la commande' : 'Client'}</legend>
         <div className="contact-grid">
           <label className="field">
             <span>Nom et prénom</span>
