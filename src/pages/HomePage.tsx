@@ -6,6 +6,7 @@ import { formatPrice } from '../lib/format'
 import { useCatalog } from '../lib/useCatalog'
 import { INSTAGRAM_URL, STORE_EMAIL, STORE_WHATSAPP, whatsappLink } from '../lib/whatsapp'
 import { GALLERY, HERO_PHOTOS, photoSrc, photoSrcSet } from '../lib/realisations'
+import type { Product } from '../lib/types'
 import { Marquee, PillLink, Reveal, TiltCard, WordsReveal } from '../components/motion'
 import { ease } from '../components/ease'
 import { Wordmark } from '../components/Wordmark'
@@ -14,9 +15,10 @@ import { IslandNav } from '../components/IslandNav'
 const CONTACT_LABEL = 'Nous écrire'
 const contactLink = whatsappLink(STORE_WHATSAPP, 'Bonjour Sarah ! Je viens du site et j’ai une question.')
 const FACEBOOK_URL = 'https://www.facebook.com/sarahnanicreations'
+const MILI_URL = 'https://www.instagram.com/milibynani'
 
 export function HomePage() {
-  const { catalog, loading } = useCatalog()
+  const { catalog, objets, loading } = useCatalog()
   const navigate = useNavigate()
   const base = catalog.products[0]
   const dtf = base?.prices.dtf ?? 2500
@@ -29,6 +31,9 @@ export function HomePage() {
 
       <section className="hero">
         <div className="hero-copy">
+          <motion.p className="eyebrow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease }}>
+            MILI by NANI, la ligne militaire de Sarah Nani Créations
+          </motion.p>
           <h1 className="display">
             <WordsReveal text="T-shirts" />
             <br />
@@ -166,6 +171,8 @@ export function HomePage() {
 
       <Gallery />
 
+      <Creations objets={objets} />
+
       <section className="section how">
         <Reveal>
           <h2 className="display section-title">Pour toute l’unité, en quelques minutes</h2>
@@ -195,11 +202,12 @@ export function HomePage() {
         <Wordmark />
         <div className="footer-links">
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><InstagramLogo size={18} weight="light" /> @sarahnanicreations</a>
+          <a href={MILI_URL} target="_blank" rel="noreferrer"><InstagramLogo size={18} weight="light" /> @milibynani</a>
           <a href={FACEBOOK_URL} target="_blank" rel="noreferrer"><FacebookLogo size={18} weight="light" /> sarahnaniCréations</a>
           <a href={contactLink} target="_blank" rel="noreferrer"><WhatsappLogo size={18} weight="light" /> WhatsApp</a>
           <a href={`mailto:${STORE_EMAIL}`}><EnvelopeSimple size={18} weight="light" /> {STORE_EMAIL}</a>
         </div>
-        <p className="muted small">© {new Date().getFullYear()} Sarah Nani Créations. Créations personnalisées avec amour.</p>
+        <p className="muted small">© {new Date().getFullYear()} Sarah Nani Créations · MILI by NANI. Créations personnalisées avec amour.</p>
       </footer>
     </div>
   )
@@ -327,6 +335,51 @@ function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
+    </section>
+  )
+}
+
+/** Coques, mugs, objets e eventos: vitrine com pedido de orçamento no WhatsApp */
+function Creations({ objets }: { objets: Product[] }) {
+  if (objets.length === 0) return null
+  return (
+    <section className="section" id="creations">
+      <Reveal>
+        <h2 className="display section-title">Et aussi, pour offrir</h2>
+      </Reveal>
+      <div className="creations">
+        {objets.map((o, i) => (
+          <motion.article
+            key={o.id}
+            className={o.image_url ? 'creation' : 'creation creation-text'}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.8, ease, delay: i * 0.08 }}
+          >
+            {o.image_url && (
+              <div className="creation-image">
+                <img src={o.image_url} srcSet={o.image_url.endsWith('-640.webp') ? `${o.image_url} 640w, ${o.image_url.replace('-640.webp', '-1200.webp')} 1200w` : undefined} sizes="(max-width: 900px) 100vw, 33vw" alt={o.name} loading="lazy" />
+              </div>
+            )}
+            <div className="creation-body">
+              <h3 className="display">{o.name}</h3>
+              <p>{o.description}</p>
+              <div className="creation-foot">
+                <span className="creation-price">{o.price_from != null ? `À partir de ${formatPrice(o.price_from)}` : 'Sur devis'}</span>
+                <a
+                  className="chip-button accent"
+                  href={whatsappLink(STORE_WHATSAPP, `Bonjour Sarah ! Je voudrais un devis pour : ${o.name}.`)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <WhatsappLogo size={16} weight="bold" /> Demander un devis
+                </a>
+              </div>
+            </div>
+          </motion.article>
+        ))}
+      </div>
     </section>
   )
 }

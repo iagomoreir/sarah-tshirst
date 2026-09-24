@@ -6,6 +6,7 @@ import type { OrderOption, Product } from './types'
 /** Modelos e opções ativos (vitrine e bon de commande) */
 export function useCatalog(includeInactive = false) {
   const [catalog, setCatalog] = useState<Catalog>({ products: [], options: [] })
+  const [objets, setObjets] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [version, setVersion] = useState(0)
@@ -18,7 +19,10 @@ export function useCatalog(includeInactive = false) {
       ([p, o]) => {
         if (cancelled) return
         if (p.error || o.error) setError('Impossible de charger le catalogue pour le moment.')
-        setCatalog({ products: (p.data as Product[]) ?? [], options: (o.data as OrderOption[]) ?? [] })
+        const all = (p.data as Product[]) ?? []
+        // Só têxteis entram no bon de commande; objets são vitrine com orçamento
+        setCatalog({ products: all.filter((x) => (x.kind ?? 'textile') === 'textile'), options: (o.data as OrderOption[]) ?? [] })
+        setObjets(all.filter((x) => x.kind === 'objet'))
         setLoading(false)
       },
     )
@@ -27,5 +31,5 @@ export function useCatalog(includeInactive = false) {
     }
   }, [includeInactive, version])
 
-  return { catalog, loading, error, reload: () => setVersion((v) => v + 1) }
+  return { catalog, objets, loading, error, reload: () => setVersion((v) => v + 1) }
 }

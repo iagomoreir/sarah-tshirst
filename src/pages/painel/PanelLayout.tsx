@@ -11,7 +11,7 @@ export function PanelLayout() {
 
   const links = [
     { to: '/painel', label: 'Commandes', icon: Package, end: true },
-    { to: '/painel/produtos', label: 'Modèles', icon: TShirt, end: false },
+    { to: '/painel/produtos', label: 'Produits', icon: TShirt, end: false },
     ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Utilisateurs', icon: Users, end: false }] : []),
   ]
 

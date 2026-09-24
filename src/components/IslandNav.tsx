@@ -21,6 +21,7 @@ export function IslandNav({ showCta = true }: { showCta?: boolean }) {
         <a href="/#tarifs">Tarifs</a>
         <a href="/#personnalisation">Personnalisation</a>
         <a href="/#realisations">Réalisations</a>
+        <a href="/#creations">Cadeaux</a>
       </nav>
       {showCta && (
         <Link to="/commande" className="island-cta">

@@ -5,6 +5,7 @@ Checks: `npm run lint`, `npm run build`.
 
 - Tudo em francês (site e painel `/painel`): a cliente é francesa.
 - Mangas: insigne e drapeau français na manga esquerda; drapeau de nationalité na direita.
+- Produtos têm `kind`: `textile` (bon de commande) ou `objet` (coques, mugs, cadeaux: vitrine + devis no WhatsApp). Linha militar: MILI by NANI.
 - Pedidos são bons de commande em massa: lógica pura em `src/lib/orderSheet.ts`
   (preço, colar do Excel, resumo, CSV). Preço final sempre do banco (`create_order`).
 - Design: identidade do flyer (creme, laranja queimado, Oswald + Great Vibes),

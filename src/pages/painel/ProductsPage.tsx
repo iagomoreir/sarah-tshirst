@@ -10,6 +10,8 @@ import { ease } from '../../components/ease'
 type Draft = Omit<Product, 'id'> & { id?: string }
 
 const EMPTY: Draft = {
+  kind: 'textile',
+  price_from: null,
   name: '',
   description: '',
   prices: { dtf: 2500, sublimation: 1600 },
@@ -38,9 +40,9 @@ export function ProductsPage() {
   return (
     <div>
       <header className="panel-head">
-        <h1>Modèles</h1>
+        <h1>Produits</h1>
         <PillButton onClick={() => setDraft({ ...EMPTY, sort: products.length + 1 })} icon={<Plus size={16} weight="bold" />}>
-          Nouveau modèle
+          Nouveau produit
         </PillButton>
       </header>
 
@@ -59,13 +61,17 @@ export function ProductsPage() {
               <div className="thumb">{p.image_url ? <img src={p.image_url} alt="" /> : <span>{p.name.charAt(0)}</span>}</div>
               <div>
                 <p>{p.name}</p>
-                <p className="muted small">{p.sizes.join(' ')}</p>
+                <p className="muted small">{p.kind === 'objet' ? 'Objet / cadeau (sur devis)' : `Textile · ${p.sizes.join(' ')}`}</p>
               </div>
               <span className="small">
-                {(Object.keys(TECHNIQUES) as Technique[])
-                  .filter((t) => p.prices[t] != null)
-                  .map((t) => `${TECHNIQUES[t]} ${formatMoney(p.prices[t]!)}`)
-                  .join(' · ')}
+                {p.kind === 'objet'
+                  ? p.price_from != null
+                    ? `À partir de ${formatMoney(p.price_from)}`
+                    : 'Sur devis'
+                  : (Object.keys(TECHNIQUES) as Technique[])
+                      .filter((t) => p.prices[t] != null)
+                      .map((t) => `${TECHNIQUES[t]} ${formatMoney(p.prices[t]!)}`)
+                      .join(' · ')}
               </span>
               <span className={p.active ? 'badge on' : 'badge'}>{p.active ? 'En ligne' : 'Masqué'}</span>
             </button>
@@ -97,6 +103,8 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
   const toText = (c?: number) => (c == null ? '' : (c / 100).toFixed(2).replace('.', ','))
   const [prices, setPrices] = useState<Record<Technique, string>>({ dtf: toText(initial.prices.dtf), sublimation: toText(initial.prices.sublimation) })
   const [sizes, setSizes] = useState(initial.sizes.join(', '))
+  const [priceFrom, setPriceFrom] = useState(toText(initial.price_from ?? undefined))
+  const isTextile = draft.kind === 'textile'
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -131,13 +139,18 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
       parsed[t] = cents
     }
     const sizeList = sizes.split(/[,\s]+/).map((s) => s.trim().toUpperCase()).filter(Boolean)
-    if (!draft.name.trim()) return setError('Donnez un nom au modèle.')
-    if (Object.keys(parsed).length === 0) return setError('Indiquez le prix d’au moins une technique.')
-    if (sizeList.length === 0) return setError('Indiquez au moins une taille.')
+    if (!draft.name.trim()) return setError('Donnez un nom au produit.')
+    if (isTextile && Object.keys(parsed).length === 0) return setError('Indiquez le prix d’au moins une technique.')
+    if (isTextile && sizeList.length === 0) return setError('Indiquez au moins une taille.')
     const colors = draft.colors.filter((c) => c.name.trim())
+    const fromRaw = priceFrom.replace(/\s|€/g, '').replace(',', '.')
+    const fromCents = fromRaw ? Math.round(Number(fromRaw) * 100) : null
+    if (fromCents != null && (!Number.isFinite(fromCents) || fromCents < 0)) return setError('Prix « à partir de » invalide.')
 
-    const row = { ...draft, name: draft.name.trim(), prices: parsed, sizes: sizeList, colors }
-    delete row.id
+    const { id: _id, ...base } = draft
+    const row: Omit<Draft, 'id'> = isTextile
+      ? { ...base, name: draft.name.trim(), prices: parsed, sizes: sizeList, colors, price_from: null }
+      : { ...base, name: draft.name.trim(), prices: {}, sizes: [], colors: [], price_from: fromCents }
     setBusy(true)
     const { error } = draft.id
       ? await supabase.from('products').update(row).eq('id', draft.id)
@@ -167,10 +180,10 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Modifier le modèle"
+        aria-label="Modifier le produit"
       >
         <header className="drawer-head">
-          <h2>{draft.id ? 'Modifier le modèle' : 'Nouveau modèle'}</h2>
+          <h2>{draft.id ? 'Modifier le produit' : 'Nouveau produit'}</h2>
           <button className="icon-button" onClick={onClose} aria-label="Fermer">
             <X size={20} weight="light" />
           </button>
@@ -182,21 +195,35 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
             <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} hidden />
           </label>
           <label className="field">
+            <span>Type</span>
+            <select value={draft.kind} onChange={(e) => set('kind', e.target.value as Draft['kind'])}>
+              <option value="textile">Textile (dans le bon de commande)</option>
+              <option value="objet">Objet / cadeau (vitrine, devis sur WhatsApp)</option>
+            </select>
+          </label>
+          <label className="field">
             <span>Nom</span>
             <input value={draft.name} onChange={(e) => set('name', e.target.value)} required />
           </label>
-          <div className="field-row">
+          {!isTextile && (
+            <label className="field">
+              <span>Prix « à partir de » (€)</span>
+              <input value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} inputMode="decimal" placeholder="vide = sur devis" />
+            </label>
+          )}
+          {isTextile && <div className="field-row">
             {(Object.keys(TECHNIQUES) as Technique[]).map((t) => (
               <label className="field" key={t}>
                 <span>Prix {TECHNIQUES[t]} (€)</span>
                 <input value={prices[t]} onChange={(e) => setPrices((p) => ({ ...p, [t]: e.target.value }))} inputMode="decimal" placeholder="vide = indisponible" />
               </label>
             ))}
-          </div>
+          </div>}
           <label className="field">
             <span>Description</span>
             <textarea rows={3} value={draft.description} onChange={(e) => set('description', e.target.value)} />
           </label>
+          {isTextile && <>
           <label className="field">
             <span>Tailles</span>
             <input value={sizes} onChange={(e) => setSizes(e.target.value)} />
@@ -217,6 +244,7 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
               + Ajouter une couleur
             </button>
           </fieldset>
+          </>}
           <div className="field-row">
             <label className="toggle">
               <input type="checkbox" checked={draft.active} onChange={(e) => set('active', e.target.checked)} />
@@ -234,7 +262,7 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
             </PillButton>
             {draft.id && (
               <button type="button" className="link-button danger" onClick={remove} disabled={busy}>
-                Supprimer le modèle
+                Supprimer le produit
               </button>
             )}
           </div>

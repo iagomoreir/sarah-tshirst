@@ -1,8 +1,12 @@
 export type ProductColor = { name: string; hex: string }
 export type Technique = 'dtf' | 'sublimation'
 
+export type ProductKind = 'textile' | 'objet'
+
 export type Product = {
   id: string
+  kind: ProductKind
+  price_from: number | null
   name: string
   description: string
   prices: Partial<Record<Technique, number>>

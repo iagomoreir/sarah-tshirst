@@ -2404,3 +2404,109 @@ img {
     translate: 0 0;
   }
 }
+
+/* ---------- eyebrow do hero (único no site) ---------- */
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- objets / cadeaux ---------- */
+.creations {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.creation {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: 0 1px 0 var(--line), 0 24px 50px -36px var(--shadow);
+}
+
+.creation-image {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.creation-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale 0.9s var(--ease);
+}
+
+.creation:hover .creation-image img {
+  scale: 1.05;
+}
+
+.creation-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+}
+
+.creation-body h3 {
+  font-size: 24px;
+}
+
+.creation-body p {
+  color: var(--text-muted);
+}
+
+.creation-foot {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.creation-price {
+  font-weight: 700;
+}
+
+.creation-text {
+  background: var(--olive);
+  color: var(--olive-ink);
+}
+
+.creation-text .creation-body {
+  justify-content: center;
+  padding: clamp(28px, 4vw, 44px);
+}
+
+.creation-text .creation-body h3 {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+}
+
+.creation-text .creation-body p {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.creation-text .chip-button.accent {
+  background: var(--olive-ink);
+  color: var(--olive);
+}
+
+@media (max-width: 900px) {
+  .creations {
+    grid-template-columns: 1fr;
+  }
+}

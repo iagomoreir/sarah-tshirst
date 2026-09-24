@@ -32,16 +32,20 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- ---------------------------------------------------------------------
--- MODELOS (T-shirt MC, manches longues, débardeur, sweat...)
+-- PRODUTOS
+-- kind 'textile': T-shirt MC, manches longues, débardeur, sweat... (bon de commande)
+-- kind 'objet': coques, mugs, objets et événements (vitrine + devis no WhatsApp)
 -- prices: preço por técnica em centavos. Técnica ausente = indisponível.
 --   {"dtf": 2500, "sublimation": 1600}
 -- colors: [{"name": "Sable", "hex": "#c8b28a"}, ...]
 -- ---------------------------------------------------------------------
 create table products (
   id          uuid primary key default gen_random_uuid(),
+  kind        text not null default 'textile' check (kind in ('textile', 'objet')),
   name        text not null,
   description text not null default '',
   prices      jsonb not null default '{}'::jsonb,
+  price_from  integer check (price_from >= 0), -- objets: "à partir de" (null = sur devis)
   sizes       text[] not null default '{S,M,L,XL,2XL,3XL}',
   colors      jsonb not null default '[]'::jsonb,
   image_url   text,
@@ -170,7 +174,7 @@ begin
     v_pos := v_pos + 1;
 
     select * into v_product from products
-    where id = (v_line ->> 'product_id')::uuid and active;
+    where id = (v_line ->> 'product_id')::uuid and active and kind = 'textile';
     if not found then
       raise exception 'Ligne %: modèle indisponible', v_pos;
     end if;
@@ -299,6 +303,14 @@ insert into products (name, description, prices, sizes, colors, sort, image_url)
    '{"dtf": 3000}', '{S,M,L,XL,2XL,3XL}',
    '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 4,
    '/img/realisations/sweat-vert-face-mdl-640.webp');
+
+insert into products (kind, name, description, sizes, colors, sort, image_url) values
+  ('objet', 'Coque de téléphone', 'Une coque qui te ressemble : prénom intégré, visuel unique, pour ton modèle de téléphone.',
+   '{}', '[]', 10, '/img/realisations/coque-personnalisee-640.webp'),
+  ('objet', 'Mug personnalisé', 'Ton visuel, ton humour, ta tasse. Idéal en cadeau ou pour la section.',
+   '{}', '[]', 11, '/img/realisations/mug-personnalise-640.webp'),
+  ('objet', 'Objets et événements', 'Cadeaux, anniversaires, pots de départ, fins de stage : on imagine ensemble l’objet qui marquera le moment.',
+   '{}', '[]', 12, null);
 
 insert into options (code, name, description, price_cents, needs_detail, detail_label, sort) values
   ('drapeau_fr', 'Drapeau français', 'Sur la manche gauche.', 100, false, '', 1),
