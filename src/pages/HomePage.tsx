@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { animate, motion, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
-import { EnvelopeSimple, FacebookLogo, InstagramLogo, WhatsappLogo } from '@phosphor-icons/react'
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { CaretLeft, CaretRight, EnvelopeSimple, FacebookLogo, InstagramLogo, WhatsappLogo, X } from '@phosphor-icons/react'
 import { formatPrice } from '../lib/format'
 import { useCatalog } from '../lib/useCatalog'
 import { INSTAGRAM_URL, STORE_EMAIL, STORE_WHATSAPP, whatsappLink } from '../lib/whatsapp'
-import type { Product } from '../lib/types'
+import { GALLERY, HERO_PHOTOS, photoSrc, photoSrcSet } from '../lib/realisations'
 import { Marquee, PillLink, Reveal, TiltCard, WordsReveal } from '../components/motion'
 import { ease } from '../components/ease'
 import { Wordmark } from '../components/Wordmark'
@@ -44,7 +44,7 @@ export function HomePage() {
             </PillLink>
           </motion.div>
         </div>
-        <HeroFabrics products={catalog.products} loading={loading} />
+        <HeroPhotos />
       </section>
 
       <Marquee
@@ -83,6 +83,30 @@ export function HomePage() {
             <p className="display big-number">+{formatPrice(optionPrice)}</p>
             <p>par option, sur chaque pièce. Tarifs pour le T-shirt manches courtes, en Sable ou Vert armée, du S au 3XL.</p>
           </Reveal>
+        </div>
+      </section>
+
+      <section className="section perso" id="personnalisation">
+        <Reveal className="perso-photo">
+          <img src={photoSrc('tshirt-sable-nom-grade')} srcSet={photoSrcSet('tshirt-sable-nom-grade')} sizes="(max-width: 900px) 100vw, 55vw" alt="T-shirt Sable avec l’insigne et l’emplacement NOM + GRADE sur la poitrine" loading="lazy" />
+        </Reveal>
+        <div className="perso-copy">
+          <Reveal>
+            <h2 className="display section-title">Chaque pièce à votre nom</h2>
+          </Reveal>
+          <dl className="perso-list">
+            {[
+              ['Devant', 'Grade et nom sur la poitrine, avec l’insigne de votre unité.'],
+              ['Manche gauche', 'Drapeau français et insigne régimentaire.'],
+              ['Manche droite', 'Drapeau de nationalité, si choisi.'],
+              ['Dos', 'Un grand visuel pour votre unité, créé sur mesure, sur devis.'],
+            ].map(([term, text], i) => (
+              <Reveal key={term} delay={i * 0.08} className="perso-item">
+                <dt>{term}</dt>
+                <dd>{text}</dd>
+              </Reveal>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -139,6 +163,8 @@ export function HomePage() {
           {loading && Array.from({ length: 4 }, (_, i) => <div key={i} className="sk model-sk" aria-hidden />)}
         </div>
       </section>
+
+      <Gallery />
 
       <section className="section how">
         <Reveal>
@@ -203,38 +229,104 @@ function PriceCounter({ cents }: { cents: number }) {
   )
 }
 
-/** Amostras de tecido nas cores reais (Sable, Vert armée) ou fotos dos modelos */
-function HeroFabrics({ products, loading }: { products: Product[]; loading: boolean }) {
+/** Duas fotos reais empilhadas (Sable e Vert armée), com parallax no scroll */
+function HeroPhotos() {
   const ref = useRef<HTMLDivElement>(null)
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const y0 = useTransform(scrollYProgress, [0, 1], [0, -70])
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -140])
-  const photos = products.filter((p) => p.image_url).slice(0, 2)
-  const colors = products[0]?.colors.length ? products[0].colors.slice(0, 2) : [{ name: 'Sable', hex: '#c8b28a' }, { name: 'Vert armée', hex: '#4b5320' }]
-
-  if (loading) return <div className="hero-art" ref={ref}><div className="sk hero-sk" /></div>
 
   return (
     <div className="hero-art" ref={ref}>
-      {(photos.length === 2 ? photos.map((p) => ({ key: p.id, img: p.image_url!, label: p.name, hex: undefined })) : colors.map((c) => ({ key: c.name, img: undefined, label: c.name, hex: c.hex }))).map(
-        (item, i) => (
-          <motion.div
-            key={item.key}
-            className={`fabric fabric-${i}`}
-            style={reduce ? undefined : { y: i === 0 ? y0 : y1 }}
-            initial={{ opacity: 0, y: 60, rotate: 0 }}
-            animate={{ opacity: 1, rotate: i === 0 ? -5 : 4 }}
-            whileHover={{ rotate: 0, scale: 1.03 }}
-            transition={{ duration: 1, ease, delay: 0.3 + i * 0.15 }}
-          >
-            <div className="fabric-swatch" style={item.hex ? { background: item.hex } : undefined}>
-              {item.img && <img src={item.img} alt="" />}
-            </div>
-            <p className="fabric-label">{item.label}</p>
-          </motion.div>
-        ),
-      )}
+      {HERO_PHOTOS.map((photo, i) => (
+        <motion.figure
+          key={photo.name}
+          className={`fabric fabric-${i}`}
+          style={reduce ? undefined : { y: i === 0 ? y0 : y1 }}
+          initial={{ opacity: 0, y: 60, rotate: 0 }}
+          animate={{ opacity: 1, rotate: i === 0 ? -5 : 4 }}
+          whileHover={{ rotate: 0, scale: 1.03, zIndex: 3 }}
+          transition={{ duration: 1, ease, delay: 0.3 + i * 0.15 }}
+        >
+          <div className="fabric-swatch">
+            <img src={photoSrc(photo.name, 640)} srcSet={photoSrcSet(photo.name)} sizes="(max-width: 900px) 60vw, 30vw" alt={photo.alt} fetchPriority={i === 0 ? 'high' : 'auto'} />
+          </div>
+          <figcaption className="fabric-label">{photo.label}</figcaption>
+        </motion.figure>
+      ))}
     </div>
+  )
+}
+
+/** Galeria de réalisations em colunas, com visualização ampliada */
+function Gallery() {
+  const [open, setOpen] = useState<number | null>(null)
+  const photo = open == null ? null : GALLERY[open]
+  const step = (dir: 1 | -1) => setOpen((i) => (i == null ? i : (i + dir + GALLERY.length) % GALLERY.length))
+
+  useEffect(() => {
+    if (open == null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(null)
+      if (e.key === 'ArrowRight') step(1)
+      if (e.key === 'ArrowLeft') step(-1)
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  return (
+    <section className="section" id="realisations">
+      <Reveal>
+        <h2 className="display section-title">Réalisations</h2>
+      </Reveal>
+      <div className="gallery">
+        {GALLERY.map((p, i) => (
+          <motion.button
+            key={p.name}
+            className="gallery-item"
+            onClick={() => setOpen(i)}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.8, ease, delay: (i % 3) * 0.08 }}
+            aria-label={`Agrandir : ${p.caption}`}
+          >
+            <motion.img layoutId={`photo-${p.name}`} src={photoSrc(p.name, 640)} srcSet={photoSrcSet(p.name)} sizes="(max-width: 700px) 100vw, 33vw" alt={p.alt} loading="lazy" style={{ aspectRatio: p.ratio }} />
+            <span className="gallery-caption">{p.caption}</span>
+          </motion.button>
+        ))}
+      </div>
+      <Reveal className="gallery-cta">
+        <p>Un visuel pour votre unité, votre section ou votre promo ? Sarah le dessine avec vous.</p>
+        <PillLink href={contactLink} target="_blank" rel="noreferrer" variant="ghost" icon={<WhatsappLogo size={16} weight="bold" />}>
+          {CONTACT_LABEL}
+        </PillLink>
+      </Reveal>
+
+      <AnimatePresence>
+        {photo && (
+          <motion.div className="lightbox" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(null)} role="dialog" aria-modal="true" aria-label={photo.caption}>
+            <motion.img
+              key={photo.name}
+              layoutId={`photo-${photo.name}`}
+              src={photoSrc(photo.name)}
+              alt={photo.alt}
+              onClick={(e) => e.stopPropagation()}
+              transition={{ duration: 0.5, ease }}
+            />
+            <p className="lightbox-caption">{photo.caption}</p>
+            <button className="lightbox-btn close" onClick={() => setOpen(null)} aria-label="Fermer"><X size={22} /></button>
+            <button className="lightbox-btn prev" onClick={(e) => { e.stopPropagation(); step(-1) }} aria-label="Photo précédente"><CaretLeft size={22} /></button>
+            <button className="lightbox-btn next" onClick={(e) => { e.stopPropagation(); step(1) }} aria-label="Photo suivante"><CaretRight size={22} /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   )
 }

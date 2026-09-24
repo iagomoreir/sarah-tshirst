@@ -19,8 +19,8 @@ export function IslandNav({ showCta = true }: { showCta?: boolean }) {
       </Link>
       <nav className="island-links" aria-label="Sections">
         <a href="/#tarifs">Tarifs</a>
-        <a href="/#options">Options</a>
-        <a href="/#modeles">Modèles</a>
+        <a href="/#personnalisation">Personnalisation</a>
+        <a href="/#realisations">Réalisations</a>
       </nav>
       {showCta && (
         <Link to="/commande" className="island-cta">

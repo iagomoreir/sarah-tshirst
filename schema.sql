@@ -284,19 +284,21 @@ create policy "equipe apaga fotos" on storage.objects for delete to authenticate
 -- ---------------------------------------------------------------------
 -- DADOS DO FLYER (editáveis depois no painel)
 -- ---------------------------------------------------------------------
-insert into products (name, description, prices, sizes, colors, sort) values
+insert into products (name, description, prices, sizes, colors, sort, image_url) values
   ('T-shirt manches courtes', 'Le modèle de base, en DTF ou en sublimation.',
    '{"dtf": 2500, "sublimation": 1600}', '{S,M,L,XL,2XL,3XL}',
-   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 1),
+   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 1,
+   '/img/realisations/tshirt-sable-nom-grade-640.webp'),
   ('T-shirt manches longues', '+3€ par rapport au tarif du T-shirt MC.',
    '{"dtf": 2800, "sublimation": 1900}', '{S,M,L,XL,2XL,3XL}',
-   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 2),
+   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 2, null),
   ('Débardeur', 'Disponible en DTF et en sublimation.',
    '{"dtf": 2500, "sublimation": 1600}', '{S,M,L,XL,2XL,3XL}',
-   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 3),
+   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 3, null),
   ('Sweat à capuche', '+5€ par rapport au tarif du T-shirt MC. DTF uniquement.',
    '{"dtf": 3000}', '{S,M,L,XL,2XL,3XL}',
-   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 4);
+   '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 4,
+   '/img/realisations/sweat-vert-face-mdl-640.webp');
 
 insert into options (code, name, description, price_cents, needs_detail, detail_label, sort) values
   ('drapeau_fr', 'Drapeau français', 'Sur la manche gauche.', 100, false, '', 1),
