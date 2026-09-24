@@ -358,7 +358,7 @@ const csvCell = (v: string | number) => {
 
 /** CSV no formato do bon de commande (abre direto no Excel FR: ; e BOM) */
 export function itemsToCsv(items: OrderItem[]) {
-  const header = ['Grade', 'Nom', 'Modèle', 'Technique', 'Taille', 'Couleur', 'Quantité', 'Drapeau français', 'Drapeau nationalité', 'Autres options', 'Remarques', 'Prix unitaire', 'Total ligne']
+  const header = ['Grade', 'Nom', 'Modèle', 'Technique', 'Taille', 'Couleur', 'Quantité', 'Drapeau français (manche gauche)', 'Drapeau nationalité (manche droite)', 'Insigne / logo (manche gauche)', 'Remarques', 'Prix unitaire', 'Total ligne']
   const opt = (item: OrderItem, code: string) => item.options.find((o: ChosenOption) => o.code === code)
   const rows = items.map((item) => [
     item.grade,

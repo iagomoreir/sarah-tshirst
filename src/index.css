@@ -2203,3 +2203,7 @@ img {
     display: none;
   }
 }
+
+.sheet-legend {
+  margin: -4px 4px 0;
+}

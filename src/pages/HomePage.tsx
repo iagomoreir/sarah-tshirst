@@ -88,13 +88,13 @@ export function HomePage() {
 
       <section className="section options-section" id="options">
         <Reveal>
-          <h2 className="display section-title">Les options, sur la manche</h2>
+          <h2 className="display section-title">Les options, sur les manches</h2>
         </Reveal>
         <div className="options-row">
           {[
             { title: 'Insigne régimentaire', text: 'Votre insigne ou un petit logo, sur la manche gauche.', art: <span className="art-insigne" aria-hidden /> },
-            { title: 'Drapeau français', text: 'Bleu, blanc, rouge, sur la manche.', art: <span className="art-flag-fr" aria-hidden /> },
-            { title: 'Drapeau de nationalité', text: 'Maroc, Pérou, Népal... Autres drapeaux sur demande.', art: <span className="art-flag-any" aria-hidden /> },
+            { title: 'Drapeau français', text: 'Bleu, blanc, rouge, sur la manche gauche.', art: <span className="art-flag-fr" aria-hidden /> },
+            { title: 'Drapeau de nationalité', text: 'Sur la manche droite. Maroc, Pérou, Népal... Autres drapeaux sur demande.', art: <span className="art-flag-any" aria-hidden /> },
           ].map((o, i) => (
             <Reveal key={o.title} className="option-item" delay={i * 0.08}>
               <motion.div className="option-art" whileHover={{ rotate: -3, scale: 1.04 }} transition={{ type: 'spring', stiffness: 300, damping: 16 }}>

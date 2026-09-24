@@ -120,6 +120,10 @@ export function OrderSheet({ catalog, lines, onChange, showErrors = false }: Pro
         )}
       </AnimatePresence>
 
+      <p className="sheet-legend muted small">
+        Manche gauche : drapeau français et insigne. Manche droite : drapeau de nationalité.
+      </p>
+
       <div className="sheet-scroll">
         <div className="sheet-grid" role="table" aria-label="Bon de commande">
           <div className="sheet-row sheet-head" role="row">

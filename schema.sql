@@ -299,8 +299,8 @@ insert into products (name, description, prices, sizes, colors, sort) values
    '[{"name":"Sable","hex":"#c8b28a"},{"name":"Vert armée","hex":"#4b5320"}]', 4);
 
 insert into options (code, name, description, price_cents, needs_detail, detail_label, sort) values
-  ('drapeau_fr', 'Drapeau français', 'Sur la manche.', 100, false, '', 1),
-  ('drapeau_nat', 'Drapeau de nationalité', 'Sur la manche. Autres drapeaux sur demande.', 100, true, 'Pays', 2),
+  ('drapeau_fr', 'Drapeau français', 'Sur la manche gauche.', 100, false, '', 1),
+  ('drapeau_nat', 'Drapeau de nationalité', 'Sur la manche droite. Autres drapeaux sur demande.', 100, true, 'Pays', 2),
   ('insigne', 'Insigne régimentaire / petit logo', 'Sur la manche gauche.', 100, true, 'Régiment ou logo', 3);
 
 -- ---------------------------------------------------------------------
