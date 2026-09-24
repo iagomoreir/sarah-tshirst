@@ -1003,7 +1003,7 @@ img {
 
 .sheet-row {
   display: grid;
-  grid-template-columns: 36px 76px minmax(130px, 1.2fr) minmax(180px, 1.3fr) 110px 70px 108px 64px minmax(280px, 2.2fr) minmax(90px, 1fr) 80px 76px;
+  grid-template-columns: 36px 76px minmax(120px, 1.2fr) minmax(170px, 1.3fr) 110px 70px 108px 64px minmax(250px, 2.2fr) minmax(90px, 1fr) 80px 76px;
   align-items: start;
   gap: 6px;
   padding: 8px 12px;
