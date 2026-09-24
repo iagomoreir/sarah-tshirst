@@ -1,30 +1,40 @@
-# Sarah Nani Creations — loja
+# Sarah Nani Créations
 
-Catálogo de camisetas + carrinho que envia o pedido pelo WhatsApp + painel (`/painel`)
-para organizar as comandas. React 19 + Vite + Supabase + `motion` (animações).
+Site de T-shirts personnalisés (DTF / sublimation) com **bon de commande em massa**
+e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 
-- Site: https://sarahcreations.i7dev.com.br
-- Servidor: Hostinger, `public_html/sarahcreations` (mesma conta do i7dev-portfolio —
-  a pasta precisa estar no `exclude:` do deploy do portfólio).
-- WhatsApp da loja: +33 6 95 67 16 40 (`VITE_WHATSAPP_NUMBER=33695671640`).
-- Referência de marca/arte: https://www.instagram.com/sarahnanicreations
+- Site: https://sarahcreations.i7dev.com.br (Hostinger, `public_html/sarahcreations`)
+- `/` vitrine (francês): técnicas, preços, opções, modelos
+- `/commande` bon de commande: uma linha por pessoa (grade, nome, modelo, técnica,
+  tamanho, cor, quantidade, opções +1€, observações). Aceita **colar direto do Excel**
+  (com ou sem cabeçalho; sem cabeçalho segue a ordem da planilha da Sarah). Rascunho
+  salvo no navegador. Ao enviar, o pedido é gravado e o cliente manda o resumo no WhatsApp.
+- `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
+  com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
+  (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).
 
-## Status (WIP)
+Os preços são sempre recalculados no banco (`create_order` em `schema.sql`); o que o
+navegador mostra é só prévia.
 
-Feito: `schema.sql` (produtos, pedidos, equipe webmaster/loja, RLS, `create_order`
-com preço calculado no banco, bucket de fotos), `supabase/functions/create-user`
-(aba Cadastro, só webmaster), `src/lib/*`, carrinho, auth, `components/motion.tsx`,
-`pages/StorePage.tsx`.
+## Configurar
 
-Falta: `ProductDialog`, `CartDrawer` (checkout → `create_order` → wa.me),
-`App.tsx`/`main.tsx` (rotas + `MotionConfig reducedMotion="user"`), `index.css`
-(identidade tirada do Instagram — nada provisório), painel (Pedidos em kanban com
-realtime, Produtos com upload de foto, Cadastro), workflow de deploy FTP.
+1. Criar projeto no Supabase e rodar `schema.sql` no SQL Editor (já cria os modelos e
+   opções do flyer).
+2. `supabase functions deploy create-user` (aba Cadastro).
+3. Criar o usuário webmaster em Authentication > Users e rodar o `insert into staff`
+   do fim do `schema.sql`. A conta da Sarah é criada pelo painel.
+4. Secrets do repositório (GitHub > Settings > Secrets):
+   `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_WHATSAPP_NUMBER`,
+   `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`.
+5. Hostinger: criar o subdomínio `sarahcreations.i7dev.com.br` apontando para
+   `public_html/sarahcreations`. O `.htaccess` em `public/` cuida das rotas.
 
-## Rodar
+## Rodar local
 
 ```bash
 cp .env.example .env.local   # preencher Supabase
 npm install
 npm run dev
 ```
+
+Checks: `npm run lint`, `npm run build`.

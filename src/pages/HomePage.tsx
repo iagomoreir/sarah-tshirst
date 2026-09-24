@@ -1,0 +1,240 @@
+import { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { animate, motion, useInView, useMotionValue, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { EnvelopeSimple, FacebookLogo, InstagramLogo, WhatsappLogo } from '@phosphor-icons/react'
+import { formatPrice } from '../lib/format'
+import { useCatalog } from '../lib/useCatalog'
+import { INSTAGRAM_URL, STORE_EMAIL, STORE_WHATSAPP, whatsappLink } from '../lib/whatsapp'
+import type { Product } from '../lib/types'
+import { Marquee, PillLink, Reveal, TiltCard, WordsReveal } from '../components/motion'
+import { ease } from '../components/ease'
+import { Wordmark } from '../components/Wordmark'
+import { IslandNav } from '../components/IslandNav'
+
+const CONTACT_LABEL = 'Nous écrire'
+const contactLink = whatsappLink(STORE_WHATSAPP, 'Bonjour Sarah ! Je viens du site et j’ai une question.')
+const FACEBOOK_URL = 'https://www.facebook.com/sarahnanicreations'
+
+export function HomePage() {
+  const { catalog, loading } = useCatalog()
+  const navigate = useNavigate()
+  const base = catalog.products[0]
+  const dtf = base?.prices.dtf ?? 2500
+  const sub = base?.prices.sublimation ?? 1600
+  const optionPrice = catalog.options[0]?.price_cents ?? 100
+
+  return (
+    <div className="store">
+      <IslandNav />
+
+      <section className="hero">
+        <div className="hero-copy">
+          <h1 className="display">
+            <WordsReveal text="T-shirts" />
+            <br />
+            <WordsReveal text="personnalisés" className="accent-text" delay={0.12} />
+          </h1>
+          <motion.p className="hero-sub" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.45 }}>
+            Pour ceux qui portent fièrement leurs couleurs et leurs valeurs. Commandes individuelles ou pour toute l’unité.
+          </motion.p>
+          <motion.div className="hero-ctas" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.6 }}>
+            <PillLink href="/commande" onClick={(e) => { e.preventDefault(); navigate('/commande') }}>Commander</PillLink>
+            <PillLink href={contactLink} target="_blank" rel="noreferrer" variant="ghost" icon={<WhatsappLogo size={16} weight="bold" />}>
+              {CONTACT_LABEL}
+            </PillLink>
+          </motion.div>
+        </div>
+        <HeroFabrics products={catalog.products} loading={loading} />
+      </section>
+
+      <Marquee
+        items={[
+          'Impression haute qualité',
+          'Textiles sélectionnés, confort et résistance',
+          'Encres durables, résistantes au lavage',
+          'Fabrication soignée',
+          'Service personnalisé à votre écoute',
+        ]}
+      />
+
+      <section className="section" id="tarifs">
+        <Reveal>
+          <h2 className="display section-title">Deux techniques, un prix à la pièce</h2>
+        </Reveal>
+        <div className="tech-bento">
+          <Reveal className="tech-card tech-dtf">
+            <div className="tech-top">
+              <h3 className="display">DTF</h3>
+              <PriceCounter cents={dtf} />
+            </div>
+            <p>
+              Impression haute qualité adaptée à la plupart des textiles. Couleurs éclatantes et excellente tenue dans le temps. Légèrement en relief au
+              toucher.
+            </p>
+          </Reveal>
+          <Reveal className="tech-card tech-sub" delay={0.1}>
+            <div className="tech-top">
+              <h3 className="display">Sublimation</h3>
+              <PriceCounter cents={sub} />
+            </div>
+            <p>L’encre est intégrée directement dans la fibre du tissu. Aucun relief au toucher, rendu durable, respirant et confortable.</p>
+          </Reveal>
+          <Reveal className="tech-card tech-note" delay={0.2}>
+            <p className="display big-number">+{formatPrice(optionPrice)}</p>
+            <p>par option, sur chaque pièce. Tarifs pour le T-shirt manches courtes, en Sable ou Vert armée, du S au 3XL.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section options-section" id="options">
+        <Reveal>
+          <h2 className="display section-title">Les options, sur la manche</h2>
+        </Reveal>
+        <div className="options-row">
+          {[
+            { title: 'Insigne régimentaire', text: 'Votre insigne ou un petit logo, sur la manche gauche.', art: <span className="art-insigne" aria-hidden /> },
+            { title: 'Drapeau français', text: 'Bleu, blanc, rouge, sur la manche.', art: <span className="art-flag-fr" aria-hidden /> },
+            { title: 'Drapeau de nationalité', text: 'Maroc, Pérou, Népal... Autres drapeaux sur demande.', art: <span className="art-flag-any" aria-hidden /> },
+          ].map((o, i) => (
+            <Reveal key={o.title} className="option-item" delay={i * 0.08}>
+              <motion.div className="option-art" whileHover={{ rotate: -3, scale: 1.04 }} transition={{ type: 'spring', stiffness: 300, damping: 16 }}>
+                {o.art}
+              </motion.div>
+              <h3>{o.title}</h3>
+              <p className="muted">{o.text}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="section" id="modeles">
+        <Reveal>
+          <h2 className="display section-title">Modèles disponibles</h2>
+        </Reveal>
+        <div className="models-row">
+          {(loading ? [] : catalog.products).map((p, i) => (
+            <motion.div
+              key={p.id}
+              className="model-wrap"
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, ease, delay: i * 0.08 }}
+            >
+              <TiltCard className="model-card" onClick={() => navigate('/commande')} aria-label={`Commander : ${p.name}`}>
+                <div className="model-image">
+                  {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" /> : <span className="model-initial display">{p.name.split(' ')[0]}</span>}
+                </div>
+                <div className="model-body">
+                  <h3>{p.name}</h3>
+                  <p className="muted small">{p.description}</p>
+                  <p className="model-prices">
+                    {p.prices.dtf != null && <span>DTF {formatPrice(p.prices.dtf)}</span>}
+                    {p.prices.sublimation != null && <span>Sublimation {formatPrice(p.prices.sublimation)}</span>}
+                  </p>
+                </div>
+              </TiltCard>
+            </motion.div>
+          ))}
+          {loading && Array.from({ length: 4 }, (_, i) => <div key={i} className="sk model-sk" aria-hidden />)}
+        </div>
+      </section>
+
+      <section className="section how">
+        <Reveal>
+          <h2 className="display section-title">Pour toute l’unité, en quelques minutes</h2>
+        </Reveal>
+        <ol className="how-list">
+          {[
+            ['Remplissez', 'Une ligne par personne : grade, nom, taille, couleur, options. Votre tableau Excel se colle directement.'],
+            ['Envoyez', 'Le bon de commande arrive chez Sarah avec son numéro, le récapitulatif par taille et le total.'],
+            ['Recevez', 'On valide ensemble le paiement et la livraison, puis la production démarre.'],
+          ].map(([title, text], i) => (
+            <Reveal key={title} delay={i * 0.1} className="how-item">
+              <h3 className="display">{title}</h3>
+              <p>{text}</p>
+            </Reveal>
+          ))}
+        </ol>
+      </section>
+
+      <section className="section">
+        <Reveal className="cta-band">
+          <h2 className="display">Votre idée, notre savoir-faire, un résultat qui vous ressemble.</h2>
+          <PillLink href="/commande" onClick={(e) => { e.preventDefault(); navigate('/commande') }}>Commander</PillLink>
+        </Reveal>
+      </section>
+
+      <footer className="store-footer">
+        <Wordmark />
+        <div className="footer-links">
+          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><InstagramLogo size={18} weight="light" /> @sarahnanicreations</a>
+          <a href={FACEBOOK_URL} target="_blank" rel="noreferrer"><FacebookLogo size={18} weight="light" /> sarahnaniCréations</a>
+          <a href={contactLink} target="_blank" rel="noreferrer"><WhatsappLogo size={18} weight="light" /> WhatsApp</a>
+          <a href={`mailto:${STORE_EMAIL}`}><EnvelopeSimple size={18} weight="light" /> {STORE_EMAIL}</a>
+        </div>
+        <p className="muted small">© {new Date().getFullYear()} Sarah Nani Créations. Créations personnalisées avec amour.</p>
+      </footer>
+    </div>
+  )
+}
+
+
+function PriceCounter({ cents }: { cents: number }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const inView = useInView(ref, { once: true, amount: 0.6 })
+  const reduce = useReducedMotion()
+  const value = useMotionValue(reduce ? cents / 100 : 0)
+  const text = useTransform(value, (v) => `${Math.round(v)}`)
+
+  useEffect(() => {
+    if (!inView) return
+    if (reduce) return value.set(cents / 100)
+    const controls = animate(value, cents / 100, { duration: 1.4, ease })
+    return () => controls.stop()
+  }, [inView, cents, reduce, value])
+
+  return (
+    <p className="price-counter display" ref={ref} aria-label={`${formatPrice(cents)} par pièce`}>
+      <motion.span aria-hidden>{text}</motion.span>
+      <span className="euro" aria-hidden>€</span>
+      <small aria-hidden>/ pièce</small>
+    </p>
+  )
+}
+
+/** Amostras de tecido nas cores reais (Sable, Vert armée) ou fotos dos modelos */
+function HeroFabrics({ products, loading }: { products: Product[]; loading: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const reduce = useReducedMotion()
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const y0 = useTransform(scrollYProgress, [0, 1], [0, -70])
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -140])
+  const photos = products.filter((p) => p.image_url).slice(0, 2)
+  const colors = products[0]?.colors.length ? products[0].colors.slice(0, 2) : [{ name: 'Sable', hex: '#c8b28a' }, { name: 'Vert armée', hex: '#4b5320' }]
+
+  if (loading) return <div className="hero-art" ref={ref}><div className="sk hero-sk" /></div>
+
+  return (
+    <div className="hero-art" ref={ref}>
+      {(photos.length === 2 ? photos.map((p) => ({ key: p.id, img: p.image_url!, label: p.name, hex: undefined })) : colors.map((c) => ({ key: c.name, img: undefined, label: c.name, hex: c.hex }))).map(
+        (item, i) => (
+          <motion.div
+            key={item.key}
+            className={`fabric fabric-${i}`}
+            style={reduce ? undefined : { y: i === 0 ? y0 : y1 }}
+            initial={{ opacity: 0, y: 60, rotate: 0 }}
+            animate={{ opacity: 1, rotate: i === 0 ? -5 : 4 }}
+            whileHover={{ rotate: 0, scale: 1.03 }}
+            transition={{ duration: 1, ease, delay: 0.3 + i * 0.15 }}
+          >
+            <div className="fabric-swatch" style={item.hex ? { background: item.hex } : undefined}>
+              {item.img && <img src={item.img} alt="" />}
+            </div>
+            <p className="fabric-label">{item.label}</p>
+          </motion.div>
+        ),
+      )}
+    </div>
+  )
+}

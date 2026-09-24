@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_WHATSAPP_NUMBER: ${{ secrets.VITE_WHATSAPP_NUMBER }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+      # Hostinger: public_html/sarahcreations (sarahcreations.i7dev.com.br).
+      # FTP_REMOTE_DIR deve apontar para essa pasta (ex.: domains/i7dev.com.br/public_html/sarahcreations/).
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          dangerous-clean-slate: false
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          sleep 10
+          page="$(curl --fail --retry 3 --retry-delay 5 --connect-timeout 15 \
+            --resolve sarahcreations.i7dev.com.br:443:${{ secrets.FTP_HOST }} \
+            -A "Mozilla/5.0 (compatible; SarahDeployBot/1.0)" \
+            https://sarahcreations.i7dev.com.br/commande)"
+          echo "$page" | grep -q "Sarah Nani"
