@@ -28,9 +28,9 @@ fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 4. Webmaster: criar o usuário em Authentication > Users e registrá-lo em
    `core.admins` (vale para todos os microprojetos). A conta da Sarah é criada
    pelo painel.
-5. Secrets do repositório (GitHub > Settings > Secrets):
-   `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_WHATSAPP_NUMBER`,
-   `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`.
+5. Secrets do repositório (GitHub > Settings > Secrets): `FTP_HOST`, `FTP_USERNAME`,
+   `FTP_PASSWORD`, `FTP_REMOTE_DIR`. URL e chave pública do Supabase ficam em
+   `.env.production` (versionado; nunca a service_role).
 6. Hostinger: criar o subdomínio `sarahcreations.i7dev.com.br` apontando para
    `public_html/sarahcreations`. O `.htaccess` em `public/` cuida das rotas.
 
