@@ -14,6 +14,8 @@ Checks: `npm run lint`, `npm run build`.
 - Banco: projeto Supabase compartilhado de microprojetos, schema `sarah` (nunca `public`).
   Migrações em `supabase/migrations/`; regras em `docs/banco-compartilhado.md`.
   Login é compartilhado: contas criadas aqui levam `user_metadata.app = 'sarah'`.
+  Acesso ao painel = linha em `sarah.staff`; inscrição gera `sarah.access_requests`
+  (gatilho em `auth.users` só para `app = 'sarah'`), aprovada pelo webmaster.
 - Deploy: Cloudflare Workers Static Assets (`wrangler.jsonc`, SPA fallback), Worker
   `sarah-tshirst`, publicado pelo Workers Builds da Cloudflare ligado ao repositório
   (branch de produção: `main`). Manual: `npm ci && npm run build && npx wrangler deploy`

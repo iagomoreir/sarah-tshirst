@@ -75,6 +75,15 @@ export type StaffMember = {
   created_at: string
 }
 
+// Inscription pelo painel, à espera da aprovação do webmaster
+export type AccessRequest = {
+  user_id: string
+  name: string
+  email: string
+  created_at: string
+  email_confirmed: boolean
+}
+
 export const TECHNIQUES: Record<Technique, string> = {
   dtf: 'DTF',
   sublimation: 'Sublimation',

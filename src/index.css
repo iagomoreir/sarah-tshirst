@@ -1597,6 +1597,24 @@ img {
   margin-bottom: 8px;
 }
 
+.login-card .stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-card .link-button {
+  align-self: flex-start;
+}
+
+.login-switch .link-button {
+  font-size: inherit;
+}
+
+.accent-icon {
+  color: var(--accent);
+}
+
 .center-page {
   min-height: 100dvh;
   display: grid;
@@ -1899,6 +1917,26 @@ img {
   grid-column: 1 / -1;
   justify-self: start;
   font-size: 13px;
+}
+
+.request-list {
+  margin-bottom: 28px;
+}
+
+.member-list .request-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.request-actions select {
+  width: auto;
+}
+
+.request-actions .link-button {
+  grid-column: auto;
 }
 
 .card-form {

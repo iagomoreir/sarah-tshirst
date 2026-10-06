@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { DB_SCHEMA, supabase } from '../lib/supabase'
 import type { StaffMember } from '../lib/types'
 import { AuthContext } from './auth'
 
@@ -49,6 +49,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         async signIn(email, password) {
           const { error } = await supabase.auth.signInWithPassword({ email, password })
           return { error: error ? 'E-mail ou mot de passe incorrect' : null }
+        },
+        async signUp(name, email, password) {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              // app: conta deste projeto no login compartilhado; o gatilho
+              // sarah.handle_new_user cria a demanda de acesso
+              data: { app: DB_SCHEMA, nom: name },
+              emailRedirectTo: `${window.location.origin}/painel/login`,
+            },
+          })
+          if (error) {
+            const weak = /password/i.test(error.message)
+            return { error: weak ? 'Mot de passe trop faible (8 caractères minimum).' : 'Inscription impossible. Réessayez plus tard.', existing: false }
+          }
+          // E-mail já cadastrado: o Supabase devolve um usuário sem identidades
+          return { error: null, existing: (data.user?.identities?.length ?? 0) === 0 }
         },
         async signOut() {
           await supabase.auth.signOut()
