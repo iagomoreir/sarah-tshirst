@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { DB_SCHEMA, supabase } from '../lib/supabase'
 import type { StaffMember } from '../lib/types'
 import { AuthContext } from './auth'
 
@@ -50,6 +50,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { error } = await supabase.auth.signInWithPassword({ email, password })
           return { error: error ? 'E-mail ou mot de passe incorrect' : null }
         },
+        // Passkey: domínio i7dev.com.br, comum aos microprojetos do banco compartilhado.
+        // Ela só identifica a conta; o acesso continua sendo sarah.staff.
+        async signInWithPasskey() {
+          const { error } = await supabase.auth.signInWithPasskey()
+          return { error: error ? passkeyError(error) : null }
+        },
+        async registerPasskey() {
+          const { error } = await supabase.auth.registerPasskey()
+          return { error: error ? passkeyError(error) : null }
+        },
+        async signUp(name, email, password) {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              // app: conta deste projeto no login compartilhado; o gatilho
+              // sarah.handle_new_user cria a demanda de acesso
+              data: { app: DB_SCHEMA, nom: name },
+              emailRedirectTo: `${window.location.origin}/painel/login`,
+            },
+          })
+          if (error) {
+            const weak = /password/i.test(error.message)
+            return { error: weak ? 'Mot de passe trop faible (8 caractères minimum).' : 'Inscription impossible. Réessayez plus tard.', existing: false }
+          }
+          // E-mail já cadastrado: o Supabase devolve um usuário sem identidades
+          return { error: null, existing: (data.user?.identities?.length ?? 0) === 0 }
+        },
         async signOut() {
           await supabase.auth.signOut()
         },
@@ -58,4 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
+}
+
+function passkeyError(error: { message?: string; code?: string; name?: string }) {
+  const text = `${error.code ?? ''} ${error.name ?? ''} ${error.message ?? ''}`
+  if (/NotAllowed|abort|cancel/i.test(text)) return 'Opération annulée.'
+  if (/credential_exists/i.test(text)) return 'Cette passkey est déjà enregistrée.'
+  if (/credential_not_found/i.test(text)) return 'Aucun compte associé à cette passkey.'
+  if (/email_not_confirmed/i.test(text)) return 'Confirmez d’abord votre adresse e-mail.'
+  if (/too_many_passkeys/i.test(text)) return 'Nombre maximum de passkeys atteint.'
+  return 'Passkey indisponible pour le moment. Utilisez votre mot de passe.'
 }

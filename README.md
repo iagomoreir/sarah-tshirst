@@ -13,6 +13,9 @@ e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 - `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
   com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
   (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).
+- Inscrição: "Créer un compte" no login do painel. A conta nasce sem acesso e vira uma
+  demanda em "Demandes en attente" (aba Utilisateurs); o webmaster valida (escolhendo
+  Boutique ou Webmaster) ou recusa. Conta de outro microprojeto pede acesso ao entrar.
 
 Os preços são sempre recalculados no banco (`sarah.create_order` em `supabase/migrations/`); o que o
 navegador mostra é só prévia.
@@ -32,7 +35,10 @@ fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 5. Deploy: Workers Builds (Cloudflare > Workers & Pages > `sarah-tshirst` > Settings >
    Builds) ligado a este repositório; build `npm run build`, deploy `npx wrangler deploy`.
    Nenhum secret no GitHub. O `ci.yml` só roda lint + build nos PRs.
-6. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
+6. Auth > URL Configuration > Redirect URLs: adicionar
+   `https://sarahcreations.i7dev.com.br/painel/login` (link de confirmação do e-mail
+   da inscrição).
+7. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
    deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
 
 ## Rodar local

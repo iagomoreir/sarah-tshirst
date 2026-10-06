@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { UserPlus } from '@phosphor-icons/react'
+import { Check, UserPlus } from '@phosphor-icons/react'
 import { FN_CREATE_USER, supabase } from '../../lib/supabase'
 import { formatDate } from '../../lib/format'
-import type { StaffMember, StaffRole } from '../../lib/types'
+import type { AccessRequest, StaffMember, StaffRole } from '../../lib/types'
 import { useAuth } from '../../auth/auth'
 import { PillButton } from '../../components/motion'
 import { ease } from '../../components/ease'
@@ -11,6 +11,8 @@ import { ease } from '../../components/ease'
 export function UsersPage() {
   const { staff: me } = useAuth()
   const [members, setMembers] = useState<StaffMember[]>([])
+  const [requests, setRequests] = useState<AccessRequest[]>([])
+  const [requestRoles, setRequestRoles] = useState<Record<string, StaffRole>>({})
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,8 +21,32 @@ export function UsersPage() {
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
 
   async function load() {
-    const { data } = await supabase.from('staff').select('*').order('created_at')
-    setMembers((data as StaffMember[]) ?? [])
+    const [staffRes, requestRes] = await Promise.all([
+      supabase.from('staff').select('*').order('created_at'),
+      supabase.rpc('pending_requests'),
+    ])
+    setMembers((staffRes.data as StaffMember[]) ?? [])
+    setRequests((requestRes.data as AccessRequest[]) ?? [])
+  }
+
+  // Aprovar = entrar em sarah.staff (o gatilho apaga a demanda)
+  async function approve(request: AccessRequest) {
+    setMessage(null)
+    const role = requestRoles[request.user_id] ?? 'loja'
+    const { error } = await supabase
+      .from('staff')
+      .insert({ user_id: request.user_id, name: request.name, email: request.email, role })
+    if (error) return setMessage({ kind: 'error', text: 'Impossible de valider la demande.' })
+    setMessage({ kind: 'ok', text: `${request.name} a maintenant accès au panneau.` })
+    load()
+  }
+
+  async function reject(request: AccessRequest) {
+    if (!confirm(`Refuser la demande de ${request.name} ?`)) return
+    setMessage(null)
+    const { error } = await supabase.from('access_requests').delete().eq('user_id', request.user_id)
+    if (error) return setMessage({ kind: 'error', text: 'Impossible de refuser la demande.' })
+    load()
   }
 
   useEffect(() => {
@@ -65,6 +91,50 @@ export function UsersPage() {
 
       <div className="users-grid">
         <section>
+          {requests.length > 0 && (
+            <>
+              <h2 className="subhead">Demandes en attente ({requests.length})</h2>
+              <ul className="member-list request-list">
+                <AnimatePresence initial={false}>
+                  {requests.map((r) => (
+                    <motion.li
+                      key={r.user_id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -16 }}
+                      transition={{ duration: 0.35, ease }}
+                    >
+                      <div>
+                        <p>{r.name}</p>
+                        <p className="muted small">
+                          {r.email}, le {formatDate(r.created_at)}
+                        </p>
+                      </div>
+                      <span className={r.email_confirmed ? 'badge on' : 'badge'}>{r.email_confirmed ? 'E-mail confirmé' : 'E-mail non confirmé'}</span>
+                      <div className="request-actions">
+                        <select
+                          aria-label={`Rôle de ${r.name}`}
+                          value={requestRoles[r.user_id] ?? 'loja'}
+                          onChange={(e) => setRequestRoles((prev) => ({ ...prev, [r.user_id]: e.target.value as StaffRole }))}
+                        >
+                          <option value="loja">Boutique</option>
+                          <option value="webmaster">Webmaster</option>
+                        </select>
+                        <button className="chip-button accent" onClick={() => approve(r)}>
+                          <Check size={14} weight="bold" />
+                          Valider
+                        </button>
+                        <button className="link-button danger" onClick={() => reject(r)}>
+                          Refuser
+                        </button>
+                      </div>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+            </>
+          )}
           <h2 className="subhead">Accès au panneau</h2>
           <ul className="member-list">
             <AnimatePresence initial={false}>

@@ -1597,6 +1597,24 @@ img {
   margin-bottom: 8px;
 }
 
+.login-card .stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-card .link-button {
+  align-self: flex-start;
+}
+
+.login-switch .link-button {
+  font-size: inherit;
+}
+
+.accent-icon {
+  color: var(--accent);
+}
+
 .center-page {
   min-height: 100dvh;
   display: grid;
@@ -1675,6 +1693,18 @@ img {
 .panel-user small {
   display: block;
   font-weight: 400;
+}
+
+.panel-user p {
+  flex: 1;
+}
+
+.passkey-msg {
+  padding: 8px 12px 0;
+}
+
+.passkey-button {
+  justify-content: center;
 }
 
 .panel-main {
@@ -1901,6 +1931,26 @@ img {
   font-size: 13px;
 }
 
+.request-list {
+  margin-bottom: 28px;
+}
+
+.member-list .request-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.request-actions select {
+  width: auto;
+}
+
+.request-actions .link-button {
+  grid-column: auto;
+}
+
 .card-form {
   display: flex;
   flex-direction: column;
@@ -1992,6 +2042,18 @@ img {
 
   .panel-user p {
     display: none;
+  }
+
+  .passkey-msg {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    z-index: 30;
+    padding: 12px 16px;
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: 0 14px 30px -18px var(--shadow);
   }
 
   .users-grid {
