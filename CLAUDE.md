@@ -13,5 +13,9 @@ Checks: `npm run lint`, `npm run build`.
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).
 - Banco: projeto Supabase compartilhado de microprojetos, schema `sarah` (nunca `public`).
   Migrações em `supabase/migrations/`; regras em `docs/banco-compartilhado.md`.
+  Login é compartilhado: contas criadas aqui levam `user_metadata.app = 'sarah'`.
 - Deploy: Cloudflare Workers Static Assets (`wrangler.jsonc`, SPA fallback), Worker
-  `sarah-tshirst`, publicado pelo Workers Builds da Cloudflare ligado ao repositório.
+  `sarah-tshirst`, publicado pelo Workers Builds da Cloudflare ligado ao repositório
+  (branch de produção: `main`). Manual: `npm ci && npm run build && npx wrangler deploy`
+  (o `dist/` precisa existir antes do deploy).
+- Manter este arquivo e o `README.md` em dia a cada mudança de stack, banco ou deploy.
