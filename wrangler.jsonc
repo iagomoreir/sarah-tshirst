@@ -1,0 +1,16 @@
+{
+  // Hospedagem estática na Cloudflare Workers (Static Assets), mesmo padrão do auxsan:
+  // SSL e DNS gerenciados pela Cloudflare, sem depender da origem Hostinger.
+  "name": "sarah-creations",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Rotas do React Router (/commande, /painel/...) caem no index.html
+    "not_found_handling": "single-page-application"
+  },
+  // A Cloudflare cria o DNS e o certificado; não pode existir outro registro
+  // DNS para este nome na zona i7dev.com.br.
+  "routes": [
+    { "pattern": "sarahcreations.i7dev.com.br", "custom_domain": true }
+  ]
+}

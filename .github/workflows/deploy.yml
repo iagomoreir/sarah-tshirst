@@ -25,24 +25,26 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
-      # Hostinger: public_html/sarahcreations (sarahcreations.i7dev.com.br).
-      # FTP_REMOTE_DIR deve apontar para essa pasta (ex.: domains/i7dev.com.br/public_html/sarahcreations/).
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      # Cloudflare Workers (Static Assets), configuração em wrangler.jsonc
+      - name: Deploy na Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          dangerous-clean-slate: false
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: deploy
 
       - name: Smoke test
         run: |
           set -euo pipefail
-          sleep 10
-          page="$(curl --fail --retry 3 --retry-delay 5 --connect-timeout 15 \
-            --resolve sarahcreations.i7dev.com.br:443:${{ secrets.FTP_HOST }} \
-            -A "Mozilla/5.0 (compatible; SarahDeployBot/1.0)" \
-            https://sarahcreations.i7dev.com.br/commande)"
-          echo "$page" | grep -q "Sarah Nani"
+          # No primeiro deploy o certificado do domínio pode levar alguns minutos
+          for i in $(seq 1 20); do
+            if page="$(curl -fsS --connect-timeout 15 -A "Mozilla/5.0 (compatible; SarahDeployBot/1.0)" \
+                 https://sarahcreations.i7dev.com.br/commande)"; then
+              echo "$page" | grep -q "Sarah Nani" && echo "ok" && exit 0
+            fi
+            echo "tentativa $i: ainda não respondeu, aguardando..."
+            sleep 15
+          done
+          echo "::error::sarahcreations.i7dev.com.br não respondeu com o site" >&2
+          exit 1

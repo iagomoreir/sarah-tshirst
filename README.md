@@ -3,7 +3,8 @@
 Site de T-shirts personnalisés (DTF / sublimation) com **bon de commande em massa**
 e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 
-- Site: https://sarahcreations.i7dev.com.br (Hostinger, `public_html/sarahcreations`)
+- Site: https://sarahcreations.i7dev.com.br (Cloudflare Workers, `wrangler.jsonc`;
+  deploy a cada push no `main`)
 - `/` vitrine (francês): técnicas, preços, opções, modelos
 - `/commande` bon de commande: uma linha por pessoa (grade, nome, modelo, técnica,
   tamanho, cor, quantidade, opções +1€, observações). Aceita **colar direto do Excel**
@@ -28,11 +29,11 @@ fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 4. Webmaster: criar o usuário em Authentication > Users e registrá-lo em
    `core.admins` (vale para todos os microprojetos). A conta da Sarah é criada
    pelo painel.
-5. Secrets do repositório (GitHub > Settings > Secrets): `FTP_HOST`, `FTP_USERNAME`,
-   `FTP_PASSWORD`, `FTP_REMOTE_DIR`. URL e chave pública do Supabase ficam em
-   `.env.production` (versionado; nunca a service_role).
-6. Hostinger: criar o subdomínio `sarahcreations.i7dev.com.br` apontando para
-   `public_html/sarahcreations`. O `.htaccess` em `public/` cuida das rotas.
+5. Secrets do repositório (GitHub > Settings > Secrets): `CLOUDFLARE_API_TOKEN` e
+   `CLOUDFLARE_ACCOUNT_ID` (os mesmos do auxsan). URL e chave pública do Supabase
+   ficam em `.env.production` (versionado; nunca a service_role).
+6. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
+   primeiro deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
 
 ## Rodar local
 

@@ -13,4 +13,5 @@ Checks: `npm run lint`, `npm run build`.
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).
 - Banco: projeto Supabase compartilhado de microprojetos, schema `sarah` (nunca `public`).
   Migrações em `supabase/migrations/`; regras em `docs/banco-compartilhado.md`.
-- Deploy: `.github/workflows/deploy.yml` (FTP Hostinger, `public_html/sarahcreations`).
+- Deploy: Cloudflare Workers Static Assets (`wrangler.jsonc`, SPA fallback), via
+  `.github/workflows/deploy.yml` no push do `main` (mesmo padrão do auxsan).
