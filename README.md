@@ -4,7 +4,7 @@ Site de T-shirts personnalisés (DTF / sublimation) com **bon de commande em mas
 e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 
 - Site: https://sarahcreations.i7dev.com.br (Cloudflare Workers, `wrangler.jsonc`;
-  deploy a cada push no `main`)
+  deploy pelo Workers Builds da Cloudflare, ligado a este repositório)
 - `/` vitrine (francês): técnicas, preços, opções, modelos
 - `/commande` bon de commande: uma linha por pessoa (grade, nome, modelo, técnica,
   tamanho, cor, quantidade, opções +1€, observações). Aceita **colar direto do Excel**
@@ -29,11 +29,11 @@ fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 4. Webmaster: criar o usuário em Authentication > Users e registrá-lo em
    `core.admins` (vale para todos os microprojetos). A conta da Sarah é criada
    pelo painel.
-5. Secrets do repositório (GitHub > Settings > Secrets): `CLOUDFLARE_API_TOKEN` e
-   `CLOUDFLARE_ACCOUNT_ID` (os mesmos do auxsan). URL e chave pública do Supabase
-   ficam em `.env.production` (versionado; nunca a service_role).
+5. Deploy: Workers Builds (Cloudflare > Workers & Pages > `sarah-tshirst` > Settings >
+   Builds) ligado a este repositório; build `npm run build`, deploy `npx wrangler deploy`.
+   Nenhum secret no GitHub. O `ci.yml` só roda lint + build nos PRs.
 6. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
-   primeiro deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
+   deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
 
 ## Rodar local
 
