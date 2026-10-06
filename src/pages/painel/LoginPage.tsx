@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { SignIn, UserPlus } from '@phosphor-icons/react'
+import { Fingerprint, SignIn, UserPlus } from '@phosphor-icons/react'
 import { useAuth } from '../../auth/auth'
 import { PillButton, WordsReveal } from '../../components/motion'
 import { ease } from '../../components/ease'
@@ -9,7 +9,7 @@ import { ease } from '../../components/ease'
 type Mode = 'login' | 'register'
 
 export function LoginPage() {
-  const { session, signIn, signUp } = useAuth()
+  const { session, signIn, signInWithPasskey, signUp } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -45,6 +45,14 @@ export function LoginPage() {
     }
     setPassword('')
     setDone(`Compte créé. Confirmez votre adresse avec le lien envoyé à ${email.trim()}, puis attendez la validation de l’administrateur.`)
+  }
+
+  async function passkey() {
+    setBusy(true)
+    setError(null)
+    const { error } = await signInWithPasskey()
+    setBusy(false)
+    setError(error)
   }
 
   const register = mode === 'register'
@@ -87,7 +95,7 @@ export function LoginPage() {
             </AnimatePresence>
             <label className="field">
               <span>E-mail</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete={register ? 'email' : 'username webauthn'} required />
             </label>
             <label className="field">
               <span>Mot de passe</span>
@@ -110,6 +118,12 @@ export function LoginPage() {
             >
               {register ? (busy ? 'Création...' : 'Créer mon compte') : busy ? 'Connexion...' : 'Se connecter'}
             </PillButton>
+            {!register && (
+              <button type="button" className="chip-button passkey-button" onClick={passkey} disabled={busy}>
+                <Fingerprint size={18} weight="light" />
+                Utiliser une passkey
+              </button>
+            )}
             <p className="muted small login-switch">
               {register ? 'Déjà un compte ?' : 'Pas encore de compte ?'}{' '}
               <button type="button" className="link-button" onClick={() => switchMode(register ? 'login' : 'register')}>

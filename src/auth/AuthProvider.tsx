@@ -50,6 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { error } = await supabase.auth.signInWithPassword({ email, password })
           return { error: error ? 'E-mail ou mot de passe incorrect' : null }
         },
+        // Passkey: domínio i7dev.com.br, comum aos microprojetos do banco compartilhado.
+        // Ela só identifica a conta; o acesso continua sendo sarah.staff.
+        async signInWithPasskey() {
+          const { error } = await supabase.auth.signInWithPasskey()
+          return { error: error ? passkeyError(error) : null }
+        },
+        async registerPasskey() {
+          const { error } = await supabase.auth.registerPasskey()
+          return { error: error ? passkeyError(error) : null }
+        },
         async signUp(name, email, password) {
           const { data, error } = await supabase.auth.signUp({
             email,
@@ -76,4 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
+}
+
+function passkeyError(error: { message?: string; code?: string; name?: string }) {
+  const text = `${error.code ?? ''} ${error.name ?? ''} ${error.message ?? ''}`
+  if (/NotAllowed|abort|cancel/i.test(text)) return 'Opération annulée.'
+  if (/credential_exists/i.test(text)) return 'Cette passkey est déjà enregistrée.'
+  if (/credential_not_found/i.test(text)) return 'Aucun compte associé à cette passkey.'
+  if (/email_not_confirmed/i.test(text)) return 'Confirmez d’abord votre adresse e-mail.'
+  if (/too_many_passkeys/i.test(text)) return 'Nombre maximum de passkeys atteint.'
+  return 'Passkey indisponible pour le moment. Utilisez votre mot de passe.'
 }

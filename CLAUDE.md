@@ -16,6 +16,8 @@ Checks: `npm run lint`, `npm run build`.
   Login é compartilhado: contas criadas aqui levam `user_metadata.app = 'sarah'`.
   Acesso ao painel = linha em `sarah.staff`; inscrição gera `sarah.access_requests`
   (gatilho em `auth.users` só para `app = 'sarah'`), aprovada pelo webmaster.
+  Passkey (Supabase, experimental): RP ID `i7dev.com.br`, comum a todos os microprojetos;
+  a origem `https://sarahcreations.i7dev.com.br` precisa estar em Relying Party Origins.
 - Deploy: Cloudflare Workers Static Assets (`wrangler.jsonc`, SPA fallback), Worker
   `sarah-tshirst`, publicado pelo Workers Builds da Cloudflare ligado ao repositório
   (branch de produção: `main`). Manual: `npm ci && npm run build && npx wrangler deploy`

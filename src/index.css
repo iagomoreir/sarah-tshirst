@@ -1695,6 +1695,18 @@ img {
   font-weight: 400;
 }
 
+.panel-user p {
+  flex: 1;
+}
+
+.passkey-msg {
+  padding: 8px 12px 0;
+}
+
+.passkey-button {
+  justify-content: center;
+}
+
 .panel-main {
   padding: 32px clamp(16px, 3vw, 40px);
   min-width: 0;
@@ -2030,6 +2042,18 @@ img {
 
   .panel-user p {
     display: none;
+  }
+
+  .passkey-msg {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    z-index: 30;
+    padding: 12px 16px;
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: 0 14px 30px -18px var(--shadow);
   }
 
   .users-grid {

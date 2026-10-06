@@ -7,6 +7,8 @@ export type AuthContextValue = {
   staff: StaffMember | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signInWithPasskey: () => Promise<{ error: string | null }>
+  registerPasskey: () => Promise<{ error: string | null }>
   signUp: (name: string, email: string, password: string) => Promise<{ error: string | null; existing: boolean }>
   signOut: () => Promise<void>
 }

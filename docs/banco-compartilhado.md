@@ -27,11 +27,16 @@ projeto Supabase compartilhado
 6. **Login é compartilhado** (`auth.users` é um só). Ter conta não dá acesso a nada:
    o acesso a um painel é uma linha em `slug.staff`. Webmasters globais ficam em
    `core.admins` e entram como webmaster em todos os painéis.
-7. **Storage:** um bucket por projeto (`slug-...`) e nomes de policy prefixados
+7. **Passkey:** a configuração é do projeto Supabase inteiro. Relying Party ID
+   `i7dev.com.br` (nunca trocar: invalida todas as passkeys); cada site entra em
+   *Relying Party Origins* (máximo 5, só subdomínios de `i7dev.com.br`). O nome exibido
+   é um só para todos, então use um nome neutro (ex.: `i7dev`). Uma passkey identifica
+   a conta em qualquer site; o acesso continua sendo a linha em `slug.staff`.
+8. **Storage:** um bucket por projeto (`slug-...`) e nomes de policy prefixados
    (`"slug: ..."`), porque `storage.objects` é uma tabela só para todos.
-8. **Edge Functions:** prefixo no nome (`slug-create-user`).
-9. **Realtime:** `alter publication supabase_realtime add table slug.tabela`.
-10. **Migrações:** no repositório de cada projeto, em `supabase/migrations/`.
+9. **Edge Functions:** prefixo no nome (`slug-create-user`).
+10. **Realtime:** `alter publication supabase_realtime add table slug.tabela`.
+11. **Migrações:** no repositório de cada projeto, em `supabase/migrations/`.
     Todo projeto carrega a migração `..._core.sql` (idempotente) seguida das suas.
 
 ## Checklist: novo microprojeto

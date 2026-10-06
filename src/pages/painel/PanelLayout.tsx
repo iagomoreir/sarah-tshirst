@@ -1,13 +1,21 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { Fingerprint, Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../auth/auth'
 import { ease } from '../../components/ease'
 import { Wordmark } from '../../components/Wordmark'
 
 export function PanelLayout() {
-  const { staff, signOut } = useAuth()
+  const { staff, signOut, registerPasskey } = useAuth()
   const location = useLocation()
+  const [passkeyMsg, setPasskeyMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
+
+  async function addPasskey() {
+    setPasskeyMsg(null)
+    const { error } = await registerPasskey()
+    setPasskeyMsg(error ? { kind: 'error', text: error } : { kind: 'ok', text: 'Passkey ajoutée. Vous pourrez vous connecter sans mot de passe.' })
+  }
 
   const links = [
     { to: '/painel', label: 'Commandes', icon: Package, end: true },
@@ -37,10 +45,18 @@ export function PanelLayout() {
             {staff?.name}
             <small className="muted">{staff?.role === 'webmaster' ? 'Webmaster' : 'Boutique'}</small>
           </p>
-          <button className="icon-button" onClick={signOut} aria-label="Se déconnecter">
+          <button className="icon-button" onClick={addPasskey} aria-label="Ajouter une passkey" title="Ajouter une passkey">
+            <Fingerprint size={20} weight="light" />
+          </button>
+          <button className="icon-button" onClick={signOut} aria-label="Se déconnecter" title="Se déconnecter">
             <SignOut size={20} weight="light" />
           </button>
         </div>
+        {passkeyMsg && (
+          <p className={`${passkeyMsg.kind === 'ok' ? 'field-ok' : 'field-error'} small passkey-msg`} role="status">
+            {passkeyMsg.text}
+          </p>
+        )}
       </aside>
       <main className="panel-main">
         <AnimatePresence mode="wait">
