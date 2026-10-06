@@ -44,7 +44,9 @@ projeto Supabase compartilhado
 4. **Expor o schema na API:** Supabase > Project Settings > Data API >
    *Exposed schemas* > adicionar `slug` (sem isso o site recebe erro 406/PGRST106).
 5. No site: `db: { schema: 'slug' }`, bucket e nome da Edge Function com o prefixo.
-6. Rodar os advisors de segurança do Supabase e corrigir o que aparecer.
+6. Contas criadas pelo projeto levam `user_metadata.app = 'slug'`: gatilhos de cadastro de
+   outros projetos devem ignorar contas com `app` diferente do deles.
+7. Rodar os advisors de segurança do Supabase e corrigir o que aparecer.
 
 ## Limites e quando separar
 

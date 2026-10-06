@@ -44,6 +44,9 @@ Deno.serve(async (req) => {
     email: normalized,
     password,
     email_confirm: true,
+    // Marca a conta como deste projeto: os gatilhos de outros microprojetos
+    // (ex.: VigiSD) não criam perfil para contas com app diferente do deles.
+    user_metadata: { app: SCHEMA, nom: name.trim() },
   })
   if (createdUser?.user) {
     userId = createdUser.user.id
