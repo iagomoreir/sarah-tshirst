@@ -1,30 +1,46 @@
-# Sarah Nani Creations — loja
+# Sarah Nani Créations
 
-Catálogo de camisetas + carrinho que envia o pedido pelo WhatsApp + painel (`/painel`)
-para organizar as comandas. React 19 + Vite + Supabase + `motion` (animações).
+Site de T-shirts personnalisés (DTF / sublimation) com **bon de commande em massa**
+e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 
-- Site: https://sarahcreations.i7dev.com.br
-- Servidor: Hostinger, `public_html/sarahcreations` (mesma conta do i7dev-portfolio —
-  a pasta precisa estar no `exclude:` do deploy do portfólio).
-- WhatsApp da loja: +33 6 95 67 16 40 (`VITE_WHATSAPP_NUMBER=33695671640`).
-- Referência de marca/arte: https://www.instagram.com/sarahnanicreations
+- Site: https://sarahcreations.i7dev.com.br (Cloudflare Workers, `wrangler.jsonc`;
+  deploy pelo Workers Builds da Cloudflare, ligado a este repositório)
+- `/` vitrine (francês): técnicas, preços, opções, modelos
+- `/commande` bon de commande: uma linha por pessoa (grade, nome, modelo, técnica,
+  tamanho, cor, quantidade, opções +1€, observações). Aceita **colar direto do Excel**
+  (com ou sem cabeçalho; sem cabeçalho segue a ordem da planilha da Sarah). Rascunho
+  salvo no navegador. Ao enviar, o pedido é gravado e o cliente manda o resumo no WhatsApp.
+- `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
+  com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
+  (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).
 
-## Status (WIP)
+Os preços são sempre recalculados no banco (`sarah.create_order` em `supabase/migrations/`); o que o
+navegador mostra é só prévia.
 
-Feito: `schema.sql` (produtos, pedidos, equipe webmaster/loja, RLS, `create_order`
-com preço calculado no banco, bucket de fotos), `supabase/functions/create-user`
-(aba Cadastro, só webmaster), `src/lib/*`, carrinho, auth, `components/motion.tsx`,
-`pages/StorePage.tsx`.
+## Configurar
 
-Falta: `ProductDialog`, `CartDrawer` (checkout → `create_order` → wa.me),
-`App.tsx`/`main.tsx` (rotas + `MotionConfig reducedMotion="user"`), `index.css`
-(identidade tirada do Instagram — nada provisório), painel (Pedidos em kanban com
-realtime, Produtos com upload de foto, Cadastro), workflow de deploy FTP.
+O banco é o **projeto Supabase compartilhado de microprojetos**; tudo da Sarah
+fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 
-## Rodar
+1. Aplicar as migrações de `supabase/migrations/` em ordem (`..._core.sql`,
+   depois `..._sarah.sql`). Já criam os produtos, opções e o bucket de fotos.
+2. Expor o schema: Project Settings > Data API > Exposed schemas > adicionar `sarah`.
+3. `supabase functions deploy sarah-create-user` (aba Utilisateurs).
+4. Webmaster: criar o usuário em Authentication > Users e registrá-lo em
+   `core.admins` (vale para todos os microprojetos). A conta da Sarah é criada
+   pelo painel.
+5. Deploy: Workers Builds (Cloudflare > Workers & Pages > `sarah-tshirst` > Settings >
+   Builds) ligado a este repositório; build `npm run build`, deploy `npx wrangler deploy`.
+   Nenhum secret no GitHub. O `ci.yml` só roda lint + build nos PRs.
+6. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
+   deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
+
+## Rodar local
 
 ```bash
 cp .env.example .env.local   # preencher Supabase
 npm install
 npm run dev
 ```
+
+Checks: `npm run lint`, `npm run build`.
