@@ -7,8 +7,10 @@ Checks: `npm run lint`, `npm run build`.
 - Mangas: insigne e drapeau français na manga esquerda; drapeau de nationalité na direita.
 - Produtos têm `kind`: `textile` (bon de commande) ou `objet` (coques, mugs, cadeaux: vitrine + devis no WhatsApp). Linha militar: MILI by NANI.
 - Pedidos são bons de commande em massa: lógica pura em `src/lib/orderSheet.ts`
-  (preço, colar do Excel, resumo, CSV). Preço final sempre do banco (`create_order`).
+  (preço, colar do Excel, resumo, CSV). Preço final sempre do banco (`sarah.create_order`).
 - Design: identidade do flyer (creme, laranja queimado, Oswald + Great Vibes),
   regras do taste-skill (1 acento, sem travessão no texto visível, reduced-motion) e
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).
+- Banco: projeto Supabase compartilhado de microprojetos, schema `sarah` (nunca `public`).
+  Migrações em `supabase/migrations/`; regras em `docs/banco-compartilhado.md`.
 - Deploy: `.github/workflows/deploy.yml` (FTP Hostinger, `public_html/sarahcreations`).

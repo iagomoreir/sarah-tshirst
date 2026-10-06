@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { UserPlus } from '@phosphor-icons/react'
-import { supabase } from '../../lib/supabase'
+import { FN_CREATE_USER, supabase } from '../../lib/supabase'
 import { formatDate } from '../../lib/format'
 import type { StaffMember, StaffRole } from '../../lib/types'
 import { useAuth } from '../../auth/auth'
@@ -31,7 +31,7 @@ export function UsersPage() {
     e.preventDefault()
     setMessage(null)
     setBusy(true)
-    const { data, error } = await supabase.functions.invoke('create-user', {
+    const { data, error } = await supabase.functions.invoke(FN_CREATE_USER, {
       body: { name, email, password, role },
     })
     setBusy(false)

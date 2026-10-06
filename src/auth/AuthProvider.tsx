@@ -26,10 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     let cancelled = false
     setLoading(true)
+    // my_access: linha em sarah.staff, ou webmaster global (core.admins)
     supabase
-      .from('staff')
-      .select('*')
-      .eq('user_id', userId)
+      .rpc('my_access')
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled) return

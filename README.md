@@ -13,20 +13,25 @@ e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
   com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
   (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).
 
-Os preços são sempre recalculados no banco (`create_order` em `schema.sql`); o que o
+Os preços são sempre recalculados no banco (`sarah.create_order` em `supabase/migrations/`); o que o
 navegador mostra é só prévia.
 
 ## Configurar
 
-1. Criar projeto no Supabase e rodar `schema.sql` no SQL Editor (já cria os modelos e
-   opções do flyer).
-2. `supabase functions deploy create-user` (aba Cadastro).
-3. Criar o usuário webmaster em Authentication > Users e rodar o `insert into staff`
-   do fim do `schema.sql`. A conta da Sarah é criada pelo painel.
-4. Secrets do repositório (GitHub > Settings > Secrets):
+O banco é o **projeto Supabase compartilhado de microprojetos**; tudo da Sarah
+fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
+
+1. Aplicar as migrações de `supabase/migrations/` em ordem (`..._core.sql`,
+   depois `..._sarah.sql`). Já criam os produtos, opções e o bucket de fotos.
+2. Expor o schema: Project Settings > Data API > Exposed schemas > adicionar `sarah`.
+3. `supabase functions deploy sarah-create-user` (aba Utilisateurs).
+4. Webmaster: criar o usuário em Authentication > Users e registrá-lo em
+   `core.admins` (vale para todos os microprojetos). A conta da Sarah é criada
+   pelo painel.
+5. Secrets do repositório (GitHub > Settings > Secrets):
    `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_WHATSAPP_NUMBER`,
    `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`.
-5. Hostinger: criar o subdomínio `sarahcreations.i7dev.com.br` apontando para
+6. Hostinger: criar o subdomínio `sarahcreations.i7dev.com.br` apontando para
    `public_html/sarahcreations`. O `.htaccess` em `public/` cuida das rotas.
 
 ## Rodar local

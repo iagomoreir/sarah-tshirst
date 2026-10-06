@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Image as ImageIcon, Plus, Trash, X } from '@phosphor-icons/react'
-import { supabase } from '../../lib/supabase'
+import { STORAGE_BUCKET, supabase } from '../../lib/supabase'
 import { formatMoney } from '../../lib/format'
 import { TECHNIQUES, type OrderOption, type Product, type ProductColor, type Technique } from '../../lib/types'
 import { PillButton } from '../../components/motion'
@@ -114,10 +114,10 @@ function ProductEditor({ initial, onClose, onSaved }: { initial: Draft; onClose:
     setBusy(true)
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${crypto.randomUUID()}.${ext}`
-    const { error } = await supabase.storage.from('products').upload(path, file, { cacheControl: '31536000' })
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, { cacheControl: '31536000' })
     setBusy(false)
     if (error) return setError('Échec de l’envoi de la photo.')
-    set('image_url', supabase.storage.from('products').getPublicUrl(path).data.publicUrl)
+    set('image_url', supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl)
   }
 
   function setColor(i: number, patch: Partial<ProductColor>) {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, DownloadSimple, Plus, Printer, WhatsappLogo, X } from '@phosphor-icons/react'
-import { supabase } from '../../lib/supabase'
+import { DB_SCHEMA, supabase } from '../../lib/supabase'
 import { formatDate, formatMoney } from '../../lib/format'
 import { STATUS_FLOW, STATUS_LABELS, type Order, type OrderStatus } from '../../lib/types'
 import { whatsappLink } from '../../lib/whatsapp'
@@ -34,7 +34,7 @@ export function OrdersPage() {
     // Pedido novo ou alterado em outro aparelho: recarrega
     const channel = supabase
       .channel('orders-board')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => load())
+      .on('postgres_changes', { event: '*', schema: DB_SCHEMA, table: 'orders' }, () => load())
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
