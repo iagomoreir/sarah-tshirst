@@ -1,7 +1,7 @@
 {
   // Hospedagem estática na Cloudflare Workers (Static Assets), mesmo padrão do auxsan:
   // SSL e DNS gerenciados pela Cloudflare, sem depender da origem Hostinger.
-  "name": "sarah-creations",
+  "name": "sarah-tshirst",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
