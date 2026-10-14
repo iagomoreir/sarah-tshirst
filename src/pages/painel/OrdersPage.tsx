@@ -6,7 +6,7 @@ import { DB_SCHEMA, supabase } from '../../lib/supabase'
 import { formatDate, formatMoney } from '../../lib/format'
 import { STATUS_FLOW, STATUS_LABELS, type Order, type OrderStatus } from '../../lib/types'
 import { whatsappLink } from '../../lib/whatsapp'
-import { downloadText, itemsToCsv, productionSummary } from '../../lib/orderSheet'
+import { downloadText, itemsByModel, itemsToCsv, productionSummary, SIZE_ORDER } from '../../lib/orderSheet'
 import { TECHNIQUES } from '../../lib/types'
 import { ease } from '../../components/ease'
 
@@ -152,7 +152,8 @@ function OrderDetail({
   onUpdate: (patch: Partial<Pick<Order, 'status' | 'internal_note'>>) => void
 }) {
   const [note, setNote] = useState(order.internal_note)
-  const summary = productionSummary(order.order_items, ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'])
+  const summary = productionSummary(order.order_items, SIZE_ORDER)
+  const byModel = itemsByModel(order.order_items)
   const optionText = (item: Order['order_items'][number]) =>
     item.options.map((o) => (o.detail ? `${o.name}: ${o.detail}` : o.name)).join(', ')
 
@@ -175,7 +176,7 @@ function OrderDetail({
             <button className="icon-button" onClick={() => downloadText(`commande-${order.number}.csv`, itemsToCsv(order.order_items))} aria-label="Télécharger le tableau CSV" title="Télécharger le tableau (CSV)">
               <DownloadSimple size={20} weight="light" />
             </button>
-            <button className="icon-button" onClick={() => window.print()} aria-label="Imprimer" title="Imprimer la fiche de production">
+            <button className="icon-button" onClick={() => window.print()} aria-label="Imprimer" title="Imprimer la fiche de production (par modèle, tailles croissantes)">
               <Printer size={20} weight="light" />
             </button>
             <button className="icon-button" onClick={onClose} aria-label="Fermer">
@@ -235,7 +236,44 @@ function OrderDetail({
             )}
           </div>
 
-          <div className="lines-wrap">
+          {/* Só na impressão: um bloco por modelo, tamanhos em ordem crescente */}
+          <div className="print-only print-models">
+            {byModel.map((group) => (
+              <section key={group.label} className="print-model">
+                <h3>
+                  {group.label} <small>({group.rows.reduce((n, r) => n + r.quantity, 0)} pièce(s))</small>
+                </h3>
+                <table className="lines-table">
+                  <thead>
+                    <tr>
+                      <th>Grade</th>
+                      <th>Nom</th>
+                      <th>Taille</th>
+                      <th>Modèle</th>
+                      <th>Couleur</th>
+                      <th>Qté</th>
+                      <th>Options</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.rows.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.grade}</td>
+                        <td><strong>{item.person_name}</strong></td>
+                        <td>{item.size}</td>
+                        <td>{item.product_name}</td>
+                        <td>{item.color}</td>
+                        <td>{item.quantity}</td>
+                        <td className="small">{optionText(item)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ))}
+          </div>
+
+          <div className="lines-wrap no-print">
             <table className="lines-table">
               <thead>
                 <tr>

@@ -2204,7 +2204,46 @@ img {
   }
 }
 
+.print-only {
+  display: none;
+}
+
 @media print {
+  .print-only {
+    display: block;
+  }
+
+  .print-model {
+    break-inside: avoid-page;
+    margin-top: 18px;
+  }
+
+  .print-model + .print-model {
+    break-before: page;
+  }
+
+  .print-model h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .print-model .lines-table {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .print-model th,
+  .print-model td {
+    border-bottom: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: left;
+  }
+
+  .total,
+  .detail-notes {
+    break-inside: avoid;
+  }
+
   body::before,
   body::after,
   .panel-nav,
