@@ -318,6 +318,37 @@ export function sheetToSummaryInput(lines: SheetLine[], catalog: Catalog): Summa
 }
 
 // ---------------------------------------------------------------------
+// Fiche de production impressa: um bloco por modelo, tamanhos em ordem crescente
+// ---------------------------------------------------------------------
+
+export const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL']
+
+type PrintInput = { product_name: string; technique: Technique; size: string; person_name: string; position: number }
+
+export function itemsByModel<T extends PrintInput>(items: T[], sizeOrder: string[] = SIZE_ORDER) {
+  // tamanho fora da lista vai para o fim, sem perder a linha
+  const rank = (size: string) => {
+    const i = sizeOrder.indexOf(size)
+    return i === -1 ? sizeOrder.length : i
+  }
+  const groups = new Map<string, T[]>()
+  for (const item of items) {
+    const label = `${item.product_name} · ${TECHNIQUES[item.technique]}`
+    groups.set(label, [...(groups.get(label) ?? []), item])
+  }
+  return [...groups.entries()].map(([label, rows]) => ({
+    label,
+    rows: [...rows].sort(
+      (a, b) =>
+        rank(a.size) - rank(b.size) ||
+        a.size.localeCompare(b.size) ||
+        a.person_name.localeCompare(b.person_name, 'fr') ||
+        a.position - b.position,
+    ),
+  }))
+}
+
+// ---------------------------------------------------------------------
 // Mensagem de WhatsApp e CSV
 // ---------------------------------------------------------------------
 

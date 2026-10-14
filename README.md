@@ -10,6 +10,9 @@ e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
   tamanho, cor, quantidade, opções +1€, observações). Aceita **colar direto do Excel**
   (com ou sem cabeçalho; sem cabeçalho segue a ordem da planilha da Sarah). Rascunho
   salvo no navegador. Ao enviar, o pedido é gravado e o cliente manda o resumo no WhatsApp.
+- `/painel/devis`: todo pedido (site ou painel) nasce como devis. Quatro étapes (Prix validé,
+  Maquette / BAT, Liste des tailles, Acompte de 50 %), cada uma com data e autor gravados
+  pelo banco; com as 4 validadas, vira commande automaticamente.
 - `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
   com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
   (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).

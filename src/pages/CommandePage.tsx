@@ -58,10 +58,10 @@ function Success({ result }: { result: OrderResult }) {
       <motion.span className="success-check" initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.2 }}>
         <Check size={36} weight="bold" />
       </motion.span>
-      <h2 className="display">Commande n° {result.orderNumber} enregistrée</h2>
+      <h2 className="display">Demande n° {result.orderNumber} enregistrée</h2>
       <p>
-        {result.pieces} pièce{result.pieces > 1 ? 's' : ''}, total {formatMoney(result.totalCents)}. Dernière étape : prévenez Sarah sur WhatsApp pour valider le
-        paiement et la livraison.
+        {result.pieces} pièce{result.pieces > 1 ? 's' : ''}, total estimé {formatMoney(result.totalCents)}. Prévenez Sarah sur WhatsApp : elle vous envoie le devis
+        à valider (prix, maquette, tailles et acompte de 50 %).
       </p>
       <PillLink href={whatsappLink(STORE_WHATSAPP, text)} target="_blank" rel="noreferrer" icon={<WhatsappLogo size={16} weight="bold" />}>
         Envoyer sur WhatsApp

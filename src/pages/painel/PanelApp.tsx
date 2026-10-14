@@ -15,7 +15,8 @@ export default function PanelApp() {
         <Route path="login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<PanelLayout />}>
-            <Route index element={<OrdersPage />} />
+            <Route index element={<OrdersPage mode="commandes" />} />
+            <Route path="devis" element={<OrdersPage mode="devis" />} />
             <Route path="novo" element={<NewOrderPage />} />
             <Route path="produtos" element={<ProductsPage />} />
             <Route element={<ProtectedRoute webmasterOnly />}>
