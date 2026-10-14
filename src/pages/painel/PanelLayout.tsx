@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import { Fingerprint, Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
+import { FileText, Fingerprint, Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../auth/auth'
 import { ease } from '../../components/ease'
 import { Wordmark } from '../../components/Wordmark'
@@ -18,6 +18,7 @@ export function PanelLayout() {
   }
 
   const links = [
+    { to: '/painel/devis', label: 'Devis', icon: FileText, end: false },
     { to: '/painel', label: 'Commandes', icon: Package, end: true },
     { to: '/painel/produtos', label: 'Produits', icon: TShirt, end: false },
     ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Utilisateurs', icon: Users, end: false }] : []),

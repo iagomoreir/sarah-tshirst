@@ -29,7 +29,7 @@ export type OrderOption = {
   sort: number
 }
 
-export type OrderStatus = 'novo' | 'em_producao' | 'pronto' | 'entregue' | 'cancelado'
+export type OrderStatus = 'devis' | 'novo' | 'em_producao' | 'pronto' | 'entregue' | 'cancelado'
 
 export type ChosenOption = { code: string; name: string; detail: string; price_cents: number }
 
@@ -62,7 +62,30 @@ export type Order = {
   pieces: number
   source: string
   created_at: string
+  prix_ok_at: string | null
+  prix_ok_by: string | null
+  bat_ok_at: string | null
+  bat_ok_by: string | null
+  tailles_ok_at: string | null
+  tailles_ok_by: string | null
+  acompte_ok_at: string | null
+  acompte_ok_by: string | null
+  converted_at: string | null
   order_items: OrderItem[]
+}
+
+// Étapes do devis: as 4 validadas → o banco converte em commande (sarah.devis_steps)
+export type DevisStep = 'prix' | 'bat' | 'tailles' | 'acompte'
+
+export const DEVIS_STEPS: { key: DevisStep; label: string }[] = [
+  { key: 'prix', label: 'Prix validé par le client' },
+  { key: 'bat', label: 'Maquette / BAT validé' },
+  { key: 'tailles', label: 'Liste des tailles validée' },
+  { key: 'acompte', label: 'Acompte de 50 % reçu' },
+]
+
+export function devisProgress(order: Order) {
+  return DEVIS_STEPS.filter((s) => order[`${s.key}_ok_at`]).length
 }
 
 export type StaffRole = 'webmaster' | 'loja'
@@ -90,6 +113,7 @@ export const TECHNIQUES: Record<Technique, string> = {
 }
 
 export const STATUS_LABELS: Record<OrderStatus, string> = {
+  devis: 'Devis',
   novo: 'Nouvelle',
   em_producao: 'En production',
   pronto: 'Prête',

@@ -7,7 +7,11 @@ Checks: `npm run lint`, `npm run build`.
 - Mangas: insigne e drapeau français na manga esquerda; drapeau de nationalité na direita.
 - Produtos têm `kind`: `textile` (bon de commande) ou `objet` (coques, mugs, cadeaux: vitrine + devis no WhatsApp). Linha militar: MILI by NANI.
 - Pedidos são bons de commande em massa: lógica pura em `src/lib/orderSheet.ts`
-  (preço, colar do Excel, resumo, CSV). Preço final sempre do banco (`sarah.create_order`).
+  (preço, colar do Excel, resumo, CSV, impressão por modelo). Preço final sempre do banco
+  (`sarah.create_order`). Preços só TTC, sem mostrar TVA (pedido da Sarah); acompte 50 %.
+- Fluxo: todo pedido nasce `devis` (aba Devis). 4 étapes (prix, BAT, tailles, acompte) com
+  hora e autor gravados pelo gatilho `sarah.devis_steps`; a 100 % vira commande (`novo`).
+  Apagar: só webmaster e só `cancelado` (policy restritiva).
 - Design: identidade do flyer (creme, laranja queimado, Oswald + Great Vibes),
   regras do taste-skill (1 acento, sem travessão no texto visível, reduced-motion) e
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).

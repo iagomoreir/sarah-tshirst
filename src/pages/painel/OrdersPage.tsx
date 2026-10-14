@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, DownloadSimple, Plus, Printer, WhatsappLogo, X } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowRight, CheckCircle, Circle, DownloadSimple, Plus, Printer, Trash, WhatsappLogo, X } from '@phosphor-icons/react'
 import { DB_SCHEMA, supabase } from '../../lib/supabase'
 import { formatDate, formatMoney } from '../../lib/format'
-import { STATUS_FLOW, STATUS_LABELS, type Order, type OrderStatus } from '../../lib/types'
+import { DEVIS_STEPS, devisProgress, STATUS_FLOW, STATUS_LABELS, type DevisStep, type Order, type OrderStatus } from '../../lib/types'
 import { whatsappLink } from '../../lib/whatsapp'
 import { downloadText, itemsByModel, itemsToCsv, productionSummary, SIZE_ORDER } from '../../lib/orderSheet'
 import { TECHNIQUES } from '../../lib/types'
 import { ease } from '../../components/ease'
+import { useAuth } from '../../auth/auth'
 
-export function OrdersPage() {
+type Mode = 'commandes' | 'devis'
+type OrderPatch = Partial<Pick<Order, 'status' | 'internal_note' | `${DevisStep}_ok_at`>>
+
+export function OrdersPage({ mode }: { mode: Mode }) {
+  const isDevis = mode === 'devis'
+  const { staff } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -18,36 +24,46 @@ export function OrdersPage() {
   const [openId, setOpenId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*, order_items(*)')
+    const base = supabase.from('orders').select('*, order_items(*)')
+    const { data, error } = await (isDevis ? base.eq('status', 'devis') : base.neq('status', 'devis'))
       .order('position', { referencedTable: 'order_items' })
       .order('created_at', { ascending: false })
       .limit(300)
-    if (error) setError('Impossible de charger les commandes.')
+    if (error) setError(isDevis ? 'Impossible de charger les devis.' : 'Impossible de charger les commandes.')
     else setOrders((data as Order[]) ?? [])
     setLoading(false)
-  }, [])
+  }, [isDevis])
 
   useEffect(() => {
     load()
     // Pedido novo ou alterado em outro aparelho: recarrega
     const channel = supabase
-      .channel('orders-board')
+      .channel(`orders-${mode}`)
       .on('postgres_changes', { event: '*', schema: DB_SCHEMA, table: 'orders' }, () => load())
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [load])
+  }, [load, mode])
 
-  async function update(order: Order, patch: Partial<Pick<Order, 'status' | 'internal_note'>>) {
+  async function update(order: Order, patch: OrderPatch) {
     setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, ...patch } : o)))
     const { error } = await supabase.from('orders').update(patch).eq('id', order.id)
     if (error) {
       setError('Enregistrement impossible. Rechargement...')
       load()
+      return
     }
+    // Étape do devis: o banco grava hora e autor e pode converter em commande
+    if (isDevis && Object.keys(patch).some((k) => k.endsWith('_ok_at'))) load()
+  }
+
+  async function remove(order: Order) {
+    if (!confirm(`Supprimer définitivement la commande n° ${order.number} ? Cette action est irréversible.`)) return
+    const { data, error } = await supabase.from('orders').delete().eq('id', order.id).select('id')
+    if (error || !data?.length) return setError('Suppression impossible.')
+    setOpenId(null)
+    setOrders((prev) => prev.filter((o) => o.id !== order.id))
   }
 
   function move(order: Order, dir: 1 | -1) {
@@ -59,20 +75,25 @@ export function OrdersPage() {
   const openOrder = orders.find((o) => o.id === openId) ?? null
 
   return (
-    <div>
+    <div className="orders-page">
       <header className="panel-head">
-        <h1>Commandes</h1>
+        <h1>{isDevis ? 'Devis' : 'Commandes'}</h1>
         <Link to="/painel/novo" className="pill pill-solid">
-          <span>Nouvelle commande</span>
+          <span>Nouveau devis</span>
           <span className="pill-icon"><Plus size={16} weight="bold" /></span>
         </Link>
-        <label className="toggle">
-          <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />
-          <span>Afficher les annulées</span>
-        </label>
+        {!isDevis && (
+          <label className="toggle">
+            <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />
+            <span>Afficher les annulées</span>
+          </label>
+        )}
       </header>
       {error && <p className="notice error">{error}</p>}
 
+      {isDevis ? (
+        <DevisList orders={orders} loading={loading} onOpen={setOpenId} />
+      ) : (
       <LayoutGroup>
         <div className="board" style={{ ['--cols' as string]: columns.length }}>
           {columns.map((status) => {
@@ -134,9 +155,59 @@ export function OrdersPage() {
           })}
         </div>
       </LayoutGroup>
+      )}
 
       <AnimatePresence>
-        {openOrder && <OrderDetail key={openOrder.id} order={openOrder} onClose={() => setOpenId(null)} onUpdate={(patch) => update(openOrder, patch)} />}
+        {openOrder && (
+          <OrderDetail
+            key={openOrder.id}
+            order={openOrder}
+            canDelete={staff?.role === 'webmaster'}
+            onClose={() => setOpenId(null)}
+            onUpdate={(patch) => update(openOrder, patch)}
+            onDelete={() => remove(openOrder)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function DevisList({ orders, loading, onOpen }: { orders: Order[]; loading: boolean; onOpen: (id: string) => void }) {
+  if (loading) return <div className="devis-grid"><div className="sk sk-order" aria-hidden /></div>
+  if (orders.length === 0) return <p className="column-empty">Aucun devis en cours.</p>
+  return (
+    <div className="devis-grid">
+      <AnimatePresence>
+        {orders.map((order) => {
+          const done = devisProgress(order)
+          return (
+            <motion.button
+              key={order.id}
+              layout
+              className="order-card devis-card"
+              onClick={() => onOpen(order.id)}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.35, ease }}
+            >
+              <div className="order-top">
+                <strong>#{order.number}</strong>
+                <span className="muted small">{formatDate(order.created_at)}</span>
+              </div>
+              <p>{order.unit || order.contact_name}</p>
+              {order.unit && <p className="muted small">{order.contact_name}</p>}
+              <p className="muted small">
+                {order.pieces} pièce(s), {formatMoney(order.total_cents)}
+              </p>
+              <div className="devis-progress" role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} aria-label="Étapes validées">
+                <motion.span initial={false} animate={{ width: `${(done / DEVIS_STEPS.length) * 100}%` }} transition={{ duration: 0.5, ease }} />
+              </div>
+              <p className="small devis-count">{done}/{DEVIS_STEPS.length} étapes validées</p>
+            </motion.button>
+          )
+        })}
       </AnimatePresence>
     </div>
   )
@@ -144,13 +215,18 @@ export function OrdersPage() {
 
 function OrderDetail({
   order,
+  canDelete,
   onClose,
   onUpdate,
+  onDelete,
 }: {
   order: Order
+  canDelete: boolean
   onClose: () => void
-  onUpdate: (patch: Partial<Pick<Order, 'status' | 'internal_note'>>) => void
+  onUpdate: (patch: OrderPatch) => void
+  onDelete: () => void
 }) {
+  const isDevis = order.status === 'devis'
   const [note, setNote] = useState(order.internal_note)
   const summary = productionSummary(order.order_items, SIZE_ORDER)
   const byModel = itemsByModel(order.order_items)
@@ -168,10 +244,10 @@ function OrderDetail({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={`Commande ${order.number}`}
+        aria-label={`${isDevis ? 'Devis' : 'Commande'} ${order.number}`}
       >
         <header className="drawer-head">
-          <h2>Commande n° {order.number}</h2>
+          <h2>{isDevis ? 'Devis' : 'Commande'} n° {order.number}</h2>
           <div className="head-actions no-print">
             <button className="icon-button" onClick={() => downloadText(`commande-${order.number}.csv`, itemsToCsv(order.order_items))} aria-label="Télécharger le tableau CSV" title="Télécharger le tableau (CSV)">
               <DownloadSimple size={20} weight="light" />
@@ -204,6 +280,40 @@ function OrderDetail({
               {formatDate(order.created_at)} · {order.source === 'painel' ? 'saisie dans le panneau' : 'via le site'}
             </p>
           </div>
+
+          {isDevis && (
+            <section className="devis-steps no-print" aria-label="Étapes du devis">
+              <h3 className="subhead">
+                Étapes du devis <span className="muted small">{devisProgress(order)}/{DEVIS_STEPS.length}</span>
+              </h3>
+              <ul>
+                {DEVIS_STEPS.map(({ key, label }) => {
+                  const at = order[`${key}_ok_at`]
+                  const by = order[`${key}_ok_by`]
+                  return (
+                    <li key={key}>
+                      <button
+                        className={at ? 'devis-step done' : 'devis-step'}
+                        onClick={() => onUpdate({ [`${key}_ok_at`]: at ? null : new Date().toISOString() })}
+                        aria-pressed={!!at}
+                      >
+                        {at ? <CheckCircle size={22} weight="fill" /> : <Circle size={22} weight="light" />}
+                        <span>
+                          {label}
+                          {at && (
+                            <small className="muted">
+                              Validé le {formatDate(at)}{by ? ` par ${by}` : ''}
+                            </small>
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="muted small">Quand les 4 étapes sont validées, le devis devient automatiquement une commande.</p>
+            </section>
+          )}
 
           <div className="summary-table-wrap">
             <table className="summary-table">
@@ -322,7 +432,8 @@ function OrderDetail({
             <label className="field">
               <span>Étape</span>
               <select value={order.status} onChange={(e) => onUpdate({ status: e.target.value as OrderStatus })}>
-                {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((s) => (
+                {/* Devis só vira commande pelas 4 étapes; daqui só dá para annuler */}
+                {(isDevis ? (['devis', 'cancelado'] as OrderStatus[]) : (Object.keys(STATUS_LABELS) as OrderStatus[]).filter((s) => s !== 'devis')).map((s) => (
                   <option key={s} value={s}>
                     {STATUS_LABELS[s]}
                   </option>
@@ -330,6 +441,11 @@ function OrderDetail({
               </select>
             </label>
           </div>
+          {canDelete && order.status === 'cancelado' && (
+            <button className="link-button danger no-print delete-order" onClick={onDelete}>
+              <Trash size={16} /> Supprimer définitivement
+            </button>
+          )}
           <label className="field no-print">
             <span>Note interne</span>
             <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} onBlur={() => note !== order.internal_note && onUpdate({ internal_note: note })} />
