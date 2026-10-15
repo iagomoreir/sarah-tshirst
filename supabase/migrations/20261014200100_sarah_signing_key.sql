@@ -13,7 +13,7 @@ begin
     raise exception 'Clé déjà créée';
   end if;
   perform vault.create_secret(p_private, 'sarah_signing_key', 'Sarah Nani Créations: Ed25519 pkcs8 base64 (cachet des contrats)');
-  update sarah.settings set public_key = p_public, updated_at = now();
+  update sarah.settings set public_key = p_public, updated_at = now() where id;
 end;
 $$;
 

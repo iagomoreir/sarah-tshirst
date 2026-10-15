@@ -1,0 +1,6 @@
+# Sarah Nani Créations : clé publique Ed25519 du cachet électronique des contrats
+# Empreinte (SHA-256 du texte base64 ci-dessous, 16 premiers caractères) : 8a8cb8716277dcc3
+# Vérification : sarahcreations.i7dev.com.br/verifier
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAuUqcTEEpPHpZKJqJhhqfYfOeqfRLNrBDr5QZFMvlIIc=
+-----END PUBLIC KEY-----
