@@ -16,7 +16,9 @@ Checks: `npm run lint`, `npm run build`.
   PDF congelado (pdf-lib) + SHA-256; Sarah assina ao gerar; cliente assina em `/signer/:token`
   (código por e-mail via SMTP Hostinger, assinatura desenhada); prova em `sarah.signature_events`
   (só inclusão, encadeada, cachet Ed25519 com chave no Vault, carimbo RFC 3161 FreeTSA);
-  verificação pública em `/verifier`. Assinar marca « Prix validé ». Dados da empresa em `sarah.settings`.
+  verificação pública em `/verifier`. Dados da empresa em `sarah.settings`.
+  « Prix validé » só pela assinatura (gatilho bloqueia marcar à mão); as 4 étapes continuam
+  necessárias para virar commande. Ao gerar, o link vai por e-mail ao cliente (se houver e-mail).
 - Design: identidade do flyer (creme, laranja queimado, Oswald + Great Vibes),
   regras do taste-skill (1 acento, sem travessão no texto visível, reduced-motion) e
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).

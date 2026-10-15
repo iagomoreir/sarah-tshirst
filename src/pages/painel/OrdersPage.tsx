@@ -13,6 +13,7 @@ import { useAuth } from '../../auth/auth'
 import { ContratSection } from './ContratSection'
 
 type Mode = 'commandes' | 'devis'
+type ContractState = 'none' | 'attente_client' | 'signe'
 type OrderPatch = Partial<Pick<Order, 'status' | 'internal_note' | `${DevisStep}_ok_at`>>
 
 export function OrdersPage({ mode }: { mode: Mode }) {
@@ -23,6 +24,7 @@ export function OrdersPage({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null)
   const [showCancelled, setShowCancelled] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [contracts, setContracts] = useState<Record<string, ContractState>>({})
 
   const load = useCallback(async () => {
     const base = supabase.from('orders').select('*, order_items(*)')
@@ -32,6 +34,15 @@ export function OrdersPage({ mode }: { mode: Mode }) {
       .limit(300)
     if (error) setError(isDevis ? 'Impossible de charger les devis.' : 'Impossible de charger les commandes.')
     else setOrders((data as Order[]) ?? [])
+    if (isDevis && data?.length) {
+      // Estado do contrato de cada devis (versões substituídas não contam)
+      const { data: docs } = await supabase
+        .from('documents')
+        .select('order_id, status')
+        .in('order_id', data.map((o) => o.id))
+        .neq('status', 'remplace')
+      setContracts(Object.fromEntries((docs ?? []).map((d) => [d.order_id, d.status as ContractState])))
+    }
     setLoading(false)
   }, [isDevis])
 
@@ -93,7 +104,7 @@ export function OrdersPage({ mode }: { mode: Mode }) {
       {error && <p className="notice error">{error}</p>}
 
       {isDevis ? (
-        <DevisList orders={orders} loading={loading} onOpen={setOpenId} />
+        <DevisList orders={orders} loading={loading} onOpen={setOpenId} contracts={contracts} />
       ) : (
       <LayoutGroup>
         <div className="board" style={{ ['--cols' as string]: columns.length }}>
@@ -175,7 +186,23 @@ export function OrdersPage({ mode }: { mode: Mode }) {
   )
 }
 
-function DevisList({ orders, loading, onOpen }: { orders: Order[]; loading: boolean; onOpen: (id: string) => void }) {
+const CONTRACT_BADGE: Record<ContractState, { label: string; className: string }> = {
+  none: { label: 'Contrat à envoyer', className: 'badge' },
+  attente_client: { label: 'En attente de signature', className: 'badge wait' },
+  signe: { label: 'Contrat signé', className: 'badge on' },
+}
+
+function DevisList({
+  orders,
+  loading,
+  onOpen,
+  contracts,
+}: {
+  orders: Order[]
+  loading: boolean
+  onOpen: (id: string) => void
+  contracts: Record<string, ContractState>
+}) {
   if (loading) return <div className="devis-grid"><div className="sk sk-order" aria-hidden /></div>
   if (orders.length === 0) return <p className="column-empty">Aucun devis en cours.</p>
   return (
@@ -207,6 +234,7 @@ function DevisList({ orders, loading, onOpen }: { orders: Order[]; loading: bool
                 <motion.span initial={false} animate={{ width: `${(done / DEVIS_STEPS.length) * 100}%` }} transition={{ duration: 0.5, ease }} />
               </div>
               <p className="small devis-count">{done}/{DEVIS_STEPS.length} étapes validées</p>
+              <span className={CONTRACT_BADGE[contracts[order.id] ?? 'none'].className}>{CONTRACT_BADGE[contracts[order.id] ?? 'none'].label}</span>
             </motion.button>
           )
         })}
@@ -294,20 +322,26 @@ function OrderDetail({
                 {DEVIS_STEPS.map(({ key, label }) => {
                   const at = order[`${key}_ok_at`]
                   const by = order[`${key}_ok_by`]
+                  // « Prix validé » só pela assinatura do contrato (regra também no banco)
+                  const bySignature = key === 'prix'
                   return (
                     <li key={key}>
                       <button
-                        className={at ? 'devis-step done' : 'devis-step'}
-                        onClick={() => onUpdate({ [`${key}_ok_at`]: at ? null : new Date().toISOString() })}
+                        className={`${at ? 'devis-step done' : 'devis-step'}${bySignature ? ' locked' : ''}`}
+                        onClick={() => !bySignature && onUpdate({ [`${key}_ok_at`]: at ? null : new Date().toISOString() })}
                         aria-pressed={!!at}
+                        aria-disabled={bySignature}
+                        title={bySignature ? 'Validé automatiquement quand le client signe le contrat' : undefined}
                       >
                         {at ? <CheckCircle size={22} weight="fill" /> : <Circle size={22} weight="light" />}
                         <span>
                           {label}
-                          {at && (
+                          {at ? (
                             <small className="muted">
                               Validé le {formatDate(at)}{by ? ` par ${by}` : ''}
                             </small>
+                          ) : (
+                            bySignature && <small className="muted">Se valide quand le client signe le contrat</small>
                           )}
                         </span>
                       </button>

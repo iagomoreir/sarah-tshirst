@@ -155,6 +155,38 @@ async function appendEvent(input: Omit<EventInput, 'prev_hash' | 'created_at'>) 
   return data
 }
 
+function smtpReady() {
+  return Boolean(Deno.env.get('SMTP_HOST') && Deno.env.get('SMTP_USER') && Deno.env.get('SMTP_PASS'))
+}
+
+async function sendMail(to: string, subject: string, text: string) {
+  const user = Deno.env.get('SMTP_USER')!
+  const port = Number(Deno.env.get('SMTP_PORT') ?? 465)
+  const transport = nodemailer.createTransport({ host: Deno.env.get('SMTP_HOST'), port, secure: port === 465, auth: { user, pass: Deno.env.get('SMTP_PASS') } })
+  await transport.sendMail({ from: Deno.env.get('SMTP_FROM') ?? `Sarah Nani Créations <${user}>`, to, subject, text })
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+/** Envia o link de assinatura ao e-mail do devis; falha de e-mail não impede o contrato */
+async function emailLink(order: { number: number; contact_name: string; contact_email: string }, link: string) {
+  const to = (order.contact_email ?? '').trim().toLowerCase()
+  if (!EMAIL_RE.test(to)) return { emailed: null, email_error: 'Pas d’e-mail valide sur ce devis.' }
+  if (!smtpReady()) return { emailed: null, email_error: 'Envoi d’e-mail non configuré.' }
+  try {
+    await sendMail(
+      to,
+      `Contrat à signer : devis n° ${order.number}, Sarah Nani Créations`,
+      `Bonjour ${order.contact_name},\n\nVotre contrat pour le devis n° ${order.number} est prêt. Vous pouvez le lire et le signer en ligne ici :\n\n${link}\n\n` +
+        'Un code de confirmation vous sera envoyé par e-mail au moment de signer. Le lien est valable 30 jours.\n\nMerci !\nSarah Nani Créations',
+    )
+    return { emailed: maskEmail(to), email_error: null }
+  } catch (e) {
+    console.error(e)
+    return { emailed: null, email_error: 'L’e-mail n’a pas pu être envoyé.' }
+  }
+}
+
 async function documentByToken(token: unknown) {
   if (typeof token !== 'string' || token.length < 20) throw new HttpError(404, 'Lien invalide')
   const { data } = await admin.from('documents').select('*').eq('client_token_hash', await sha256Hex(token)).maybeSingle()
@@ -247,14 +279,17 @@ async function create(req: Request, body: Record<string, unknown>) {
     otp_verified_at: null,
   })
 
-  return { document_id: id, version, sha256, link: await newClientLink(id) }
+  const link = await newClientLink(id)
+  return { document_id: id, version, sha256, link, ...(await emailLink(order, link)) }
 }
 
 async function renewLink(req: Request, body: Record<string, unknown>) {
   await staffName(req)
-  const { data: doc } = await admin.from('documents').select('id, status').eq('id', String(body.document_id ?? '')).maybeSingle()
+  const { data: doc } = await admin.from('documents').select('id, status, order_id').eq('id', String(body.document_id ?? '')).maybeSingle()
   if (!doc || doc.status !== 'attente_client') throw new HttpError(409, 'Ce contrat n’attend plus de signature')
-  return { link: await newClientLink(doc.id) }
+  const link = await newClientLink(doc.id)
+  const { data: order } = await admin.from('orders').select('number, contact_name, contact_email').eq('id', doc.order_id).single()
+  return { link, ...(await emailLink(order!, link)) }
 }
 
 async function clientView(body: Record<string, unknown>) {
@@ -277,15 +312,12 @@ async function clientOtp(body: Record<string, unknown>) {
   const doc = await documentByToken(body.token)
   if (doc.status !== 'attente_client') throw new HttpError(409, 'Ce contrat est déjà signé')
   const email = String(body.email ?? '').trim().toLowerCase()
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) throw new HttpError(400, 'Adresse e-mail invalide')
+  if (!EMAIL_RE.test(email) || email.length > 200) throw new HttpError(400, 'Adresse e-mail invalide')
 
   const { data: existing } = await admin.from('otp_codes').select('created_at').eq('document_id', doc.id).maybeSingle()
   if (existing && Date.now() - new Date(existing.created_at).getTime() < 60_000) throw new HttpError(429, 'Un code vient d’être envoyé. Patientez une minute.')
 
-  const host = Deno.env.get('SMTP_HOST')
-  const user = Deno.env.get('SMTP_USER')
-  const pass = Deno.env.get('SMTP_PASS')
-  if (!host || !user || !pass) throw new HttpError(503, 'L’envoi d’e-mail n’est pas encore configuré. Contactez Sarah.')
+  if (!smtpReady()) throw new HttpError(503, 'L’envoi d’e-mail n’est pas encore configuré. Contactez Sarah.')
 
   const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, '0')
   const { error } = await admin.from('otp_codes').upsert({
@@ -298,17 +330,13 @@ async function clientOtp(body: Record<string, unknown>) {
   })
   if (error) throw new HttpError(500, 'Code non enregistré')
 
-  const port = Number(Deno.env.get('SMTP_PORT') ?? 465)
-  const transport = nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } })
   const n = doc.snapshot.order_number
-  await transport.sendMail({
-    from: Deno.env.get('SMTP_FROM') ?? `Sarah Nani Créations <${user}>`,
-    to: email,
-    subject: `Votre code de signature : ${code}`,
-    text:
-      `Bonjour,\n\nVoici votre code pour signer le contrat du devis n° ${n} de Sarah Nani Créations :\n\n${code}\n\n` +
+  await sendMail(
+    email,
+    `Votre code de signature : ${code}`,
+    `Bonjour,\n\nVoici votre code pour signer le contrat du devis n° ${n} de Sarah Nani Créations :\n\n${code}\n\n` +
       'Ce code est valable 15 minutes. Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.\n\nSarah Nani Créations',
-  })
+  )
   return { sent: true, email: maskEmail(email) }
 }
 

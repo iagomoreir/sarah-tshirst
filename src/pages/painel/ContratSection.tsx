@@ -15,6 +15,7 @@ export function ContratSection({ order, onChanged }: { order: Order; onChanged: 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [mailInfo, setMailInfo] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -32,11 +33,15 @@ export function ContratSection({ order, onChanged }: { order: Order; onChanged: 
 
   const current = docs.find((d) => d.status !== 'remplace') ?? null
 
-  async function run(action: () => Promise<string>) {
+  type LinkResult = { link: string; emailed: string | null; email_error: string | null }
+
+  async function run(action: () => Promise<LinkResult>) {
     setBusy(true)
     setError(null)
     try {
-      setLink(await action())
+      const r = await action()
+      setLink(r.link)
+      setMailInfo(r.emailed ? `Lien envoyé par e-mail à ${r.emailed}.` : `E-mail non envoyé : ${r.email_error ?? 'erreur inconnue'} Envoyez le lien par WhatsApp.`)
       setCopied(false)
       await load()
       onChanged()
@@ -47,10 +52,8 @@ export function ContratSection({ order, onChanged }: { order: Order; onChanged: 
     }
   }
 
-  const generate = () =>
-    run(async () => (await callContrat<{ link: string }>({ action: 'create', order_id: order.id })).link)
-  const renew = (doc: ContratDoc) =>
-    run(async () => (await callContrat<{ link: string }>({ action: 'renew-link', document_id: doc.id })).link)
+  const generate = () => run(() => callContrat<LinkResult>({ action: 'create', order_id: order.id }))
+  const renew = (doc: ContratDoc) => run(() => callContrat<LinkResult>({ action: 'renew-link', document_id: doc.id }))
 
   async function download(path: string | null) {
     if (!path) return
@@ -75,8 +78,8 @@ export function ContratSection({ order, onChanged }: { order: Order; onChanged: 
 
       {!current && (
         <p className="muted small">
-          Le contrat reprend les lignes et le prix de ce devis. Sarah le signe en le générant, puis le client signe en ligne : l’étape « Prix validé » se coche
-          toute seule.
+          Le contrat reprend les lignes et le prix de ce devis. Sarah le signe en le générant, le client le reçoit par e-mail et le signe en ligne :
+          l’étape « Prix validé » se coche alors toute seule.
         </p>
       )}
 
@@ -124,6 +127,7 @@ export function ContratSection({ order, onChanged }: { order: Order; onChanged: 
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease }}
           >
+            {mailInfo && <p className="small">{mailInfo}</p>}
             <p className="small muted">Lien de signature pour le client (valable 30 jours, affiché une seule fois) :</p>
             <code>{link}</code>
             <div className="contrat-actions">

@@ -2101,6 +2101,21 @@ img {
   display: block;
 }
 
+.devis-step.locked {
+  cursor: default;
+}
+
+.devis-card .badge {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.badge.wait {
+  background: var(--surface-2);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-soft);
+}
+
 .contrat {
   display: grid;
   gap: 12px;
