@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js'
 export const DB_SCHEMA = 'sarah'
 export const STORAGE_BUCKET = 'sarah-produits'
 export const FN_CREATE_USER = 'sarah-create-user'
+export const FN_CONTRAT = 'sarah-contrat'
+export const DOCS_BUCKET = 'sarah-documents'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY

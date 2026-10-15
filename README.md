@@ -13,6 +13,9 @@ e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 - `/painel/devis`: todo pedido (site ou painel) nasce como devis. Quatro étapes (Prix validé,
   Maquette / BAT, Liste des tailles, Acompte de 50 %), cada uma com data e autor gravados
   pelo banco; com as 4 validadas, vira commande automaticamente.
+- Contrat: no devis, « Générer et signer le contrat » gera o PDF (assinado pela Sarah) e um link
+  `/signer/<token>` para o cliente, que assina desenhando e confirmando um código enviado por
+  e-mail. A assinatura marca « Prix validé ». Qualquer pessoa confere um PDF em `/verifier`.
 - `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
   com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
   (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).
@@ -38,10 +41,13 @@ fica no schema `sarah` (regras em `docs/banco-compartilhado.md`).
 5. Deploy: Workers Builds (Cloudflare > Workers & Pages > `sarah-tshirst` > Settings >
    Builds) ligado a este repositório; build `npm run build`, deploy `npx wrangler deploy`.
    Nenhum secret no GitHub. O `ci.yml` só roda lint + build nos PRs.
-6. Auth > URL Configuration > Redirect URLs: adicionar
+6. Contratos: `supabase functions deploy sarah-contrat --no-verify-jwt`; secrets da função
+   `SMTP_HOST=smtp.hostinger.com`, `SMTP_PORT=465`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
+   A chave Ed25519 é gerada pela própria função e guardada no Vault (migração `..._signing_key`).
+7. Auth > URL Configuration > Redirect URLs: adicionar
    `https://sarahcreations.i7dev.com.br/painel/login` (link de confirmação do e-mail
    da inscrição).
-7. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
+8. DNS: não pode existir registro para `sarahcreations` na zona `i7dev.com.br`; o
    deploy cria o domínio e o certificado (`custom_domain` no `wrangler.jsonc`).
 
 ## Rodar local

@@ -24,8 +24,28 @@ export function PanelLayout() {
     ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Utilisateurs', icon: Users, end: false }] : []),
   ]
 
+  const userActions = (
+    <div className="panel-user">
+      <p>
+        {staff?.name}
+        <small className="muted">{staff?.role === 'webmaster' ? 'Webmaster' : 'Boutique'}</small>
+      </p>
+      <button className="icon-button" onClick={addPasskey} aria-label="Ajouter une passkey" title="Ajouter une passkey">
+        <Fingerprint size={20} weight="light" />
+      </button>
+      <button className="icon-button" onClick={signOut} aria-label="Se déconnecter" title="Se déconnecter">
+        <SignOut size={20} weight="light" />
+      </button>
+    </div>
+  )
+
   return (
     <div className="panel">
+      {/* Celular: faixa de cima com a marca e as ações; as abas vão para a barra de baixo */}
+      <header className="panel-top glass">
+        <Wordmark compact />
+        {userActions}
+      </header>
       <aside className="panel-nav glass">
         <Wordmark compact />
         <nav>
@@ -41,24 +61,13 @@ export function PanelLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="panel-user">
-          <p>
-            {staff?.name}
-            <small className="muted">{staff?.role === 'webmaster' ? 'Webmaster' : 'Boutique'}</small>
-          </p>
-          <button className="icon-button" onClick={addPasskey} aria-label="Ajouter une passkey" title="Ajouter une passkey">
-            <Fingerprint size={20} weight="light" />
-          </button>
-          <button className="icon-button" onClick={signOut} aria-label="Se déconnecter" title="Se déconnecter">
-            <SignOut size={20} weight="light" />
-          </button>
-        </div>
-        {passkeyMsg && (
-          <p className={`${passkeyMsg.kind === 'ok' ? 'field-ok' : 'field-error'} small passkey-msg`} role="status">
-            {passkeyMsg.text}
-          </p>
-        )}
+        {userActions}
       </aside>
+      {passkeyMsg && (
+        <p className={`${passkeyMsg.kind === 'ok' ? 'field-ok' : 'field-error'} small passkey-msg`} role="status">
+          {passkeyMsg.text}
+        </p>
+      )}
       <main className="panel-main">
         <AnimatePresence mode="wait">
           <motion.div
