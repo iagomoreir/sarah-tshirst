@@ -19,6 +19,11 @@ Checks: `npm run lint`, `npm run build`.
   verificação pública em `/verifier`. Dados da empresa em `sarah.settings`.
   « Prix validé » só pela assinatura (gatilho bloqueia marcar à mão); as 4 étapes continuam
   necessárias para virar commande. Ao gerar, o link vai por e-mail ao cliente (se houver e-mail).
+- Visuels (`src/lib/visuels.ts`, tabela `sarah.order_files`, bucket privado `sarah-visuels`): o cliente
+  anexa no bon de commande; `create_order` grava `upload_key` (aberto 2 h) e o Storage só aceita
+  `devis/<upload_key>/...` nesse prazo; `sarah.add_visuel` registra. Miniatura webp feita no navegador
+  fica para sempre; original apagado 30 dias após « Livrée »/« Annulée » (gatilhos) salvo `keep`
+  (Bibliothèque). Exclusão pela API do Storage ao abrir o painel (`purgeExpiredVisuels`).
 - Design: identidade do flyer (creme, laranja queimado, Oswald + Great Vibes),
   regras do taste-skill (1 acento, sem travessão no texto visível, reduced-motion) e
   vidro só em camadas fixas (skill `glassmorphism` em `.claude/skills`).

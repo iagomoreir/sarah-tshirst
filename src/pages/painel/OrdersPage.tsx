@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, CheckCircle, Circle, DownloadSimple, Plus, Printer, Trash, WhatsappLogo, X } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowRight, CheckCircle, Circle, DownloadSimple, Paperclip, Plus, Printer, Trash, WhatsappLogo, X } from '@phosphor-icons/react'
 import { DB_SCHEMA, supabase } from '../../lib/supabase'
 import { formatDate, formatMoney } from '../../lib/format'
 import { DEVIS_STEPS, devisProgress, STATUS_FLOW, STATUS_LABELS, type DevisStep, type Order, type OrderStatus } from '../../lib/types'
@@ -11,6 +11,8 @@ import { TECHNIQUES } from '../../lib/types'
 import { ease } from '../../components/ease'
 import { useAuth } from '../../auth/auth'
 import { ContratSection } from './ContratSection'
+import { VisuelsSection } from './VisuelsSection'
+import { deleteOrderVisuels } from '../../lib/visuels'
 
 type Mode = 'commandes' | 'devis'
 type ContractState = 'none' | 'attente_client' | 'signe'
@@ -27,7 +29,7 @@ export function OrdersPage({ mode }: { mode: Mode }) {
   const [contracts, setContracts] = useState<Record<string, ContractState>>({})
 
   const load = useCallback(async () => {
-    const base = supabase.from('orders').select('*, order_items(*)')
+    const base = supabase.from('orders').select('*, order_items(*), order_files(count)')
     const { data, error } = await (isDevis ? base.eq('status', 'devis') : base.neq('status', 'devis'))
       .order('position', { referencedTable: 'order_items' })
       .order('created_at', { ascending: false })
@@ -72,6 +74,8 @@ export function OrdersPage({ mode }: { mode: Mode }) {
 
   async function remove(order: Order) {
     if (!confirm(`Supprimer définitivement la commande n° ${order.number} ? Cette action est irréversible.`)) return
+    // Arquivos primeiro: o Storage não acompanha o « on delete cascade » do banco
+    await deleteOrderVisuels(order).catch(() => undefined)
     const { data, error } = await supabase.from('orders').delete().eq('id', order.id).select('id')
     if (error || !data?.length) return setError('Suppression impossible.')
     setOpenId(null)
@@ -138,6 +142,7 @@ export function OrdersPage({ mode }: { mode: Mode }) {
                         <p className="muted small">
                           {order.pieces} pièce(s), {formatMoney(order.total_cents)}
                         </p>
+                        <VisuelsCount order={order} />
                       </button>
                       {status !== 'cancelado' && (
                         <div className="order-moves">
@@ -183,6 +188,16 @@ export function OrdersPage({ mode }: { mode: Mode }) {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+function VisuelsCount({ order }: { order: Order }) {
+  const n = order.order_files?.[0]?.count ?? 0
+  if (!n) return null
+  return (
+    <span className="small muted visuels-count">
+      <Paperclip size={14} /> {n} visuel{n > 1 ? 's' : ''}
+    </span>
   )
 }
 
@@ -235,6 +250,7 @@ function DevisList({
               </div>
               <p className="small devis-count">{done}/{DEVIS_STEPS.length} étapes validées</p>
               <span className={CONTRACT_BADGE[contracts[order.id] ?? 'none'].className}>{CONTRACT_BADGE[contracts[order.id] ?? 'none'].label}</span>
+              <VisuelsCount order={order} />
             </motion.button>
           )
         })}
@@ -354,6 +370,8 @@ function OrderDetail({
           )}
 
           {isDevis && <ContratSection order={order} onChanged={onReload} />}
+
+          <VisuelsSection order={order} />
 
           <div className="summary-table-wrap">
             <table className="summary-table">

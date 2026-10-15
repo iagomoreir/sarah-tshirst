@@ -71,7 +71,9 @@ export type Order = {
   acompte_ok_at: string | null
   acompte_ok_by: string | null
   converted_at: string | null
+  upload_key: string | null
   order_items: OrderItem[]
+  order_files?: { count: number }[]
 }
 
 // Étapes do devis: as 4 validadas → o banco converte em commande (sarah.devis_steps)

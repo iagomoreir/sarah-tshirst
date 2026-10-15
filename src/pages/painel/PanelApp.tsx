@@ -7,6 +7,7 @@ import { OrdersPage } from './OrdersPage'
 import { NewOrderPage } from './NewOrderPage'
 import { ProductsPage } from './ProductsPage'
 import { UsersPage } from './UsersPage'
+import { LibraryPage } from './LibraryPage'
 
 export default function PanelApp() {
   return (
@@ -19,6 +20,7 @@ export default function PanelApp() {
             <Route path="devis" element={<OrdersPage mode="devis" />} />
             <Route path="novo" element={<NewOrderPage />} />
             <Route path="produtos" element={<ProductsPage />} />
+            <Route path="bibliotheque" element={<LibraryPage />} />
             <Route element={<ProtectedRoute webmasterOnly />}>
               <Route path="cadastro" element={<UsersPage />} />
             </Route>

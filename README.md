@@ -16,6 +16,12 @@ e painel para organizar os pedidos. React 19 + Vite + Supabase + `motion`.
 - Contrat: no devis, « Générer et signer le contrat » gera o PDF (assinado pela Sarah) e um link
   `/signer/<token>` para o cliente, que assina desenhando e confirmando um código enviado por
   e-mail. A assinatura marca « Prix validé ». Qualquer pessoa confere um PDF em `/verifier`.
+- Visuels: no bon de commande o cliente anexa as artes (até 20, 50 Mo cada), com guia de qualidade
+  e nota na hora (vectoriel / excelente / correta / pequena demais pela resolução no tamanho de
+  impressão). O navegador gera uma miniatura leve que fica para sempre; o original vai para o bucket
+  privado `sarah-visuels` e é apagado 30 dias depois de « Livrée » (ou « Annulée »), salvo se a Sarah
+  o guardar na **Bibliothèque** (`/painel/bibliotheque`, logos e insignes recorrentes). A limpeza roda
+  ao abrir o painel (o Storage só apaga pela API).
 - `/painel` (login): Pedidos em quadro (Novo, Em produção, Pronto, Entregue), detalhe
   com resumo de produção por tamanho, exportação CSV (Excel) e impressão; Novo pedido
   (a Sarah lança pedidos recebidos em papel); Modelos e opções; Cadastro (só webmaster).

@@ -1,15 +1,21 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
-import { FileText, Fingerprint, Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
+import { BookmarksSimple, FileText, Fingerprint, Package, SignOut, TShirt, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../auth/auth'
 import { ease } from '../../components/ease'
 import { Wordmark } from '../../components/Wordmark'
+import { purgeExpiredVisuels } from '../../lib/visuels'
 
 export function PanelLayout() {
   const { staff, signOut, registerPasskey } = useAuth()
   const location = useLocation()
   const [passkeyMsg, setPasskeyMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
+
+  // Originais com prazo vencido (30 dias depois de « Livrée ») saem do Storage ao abrir o painel
+  useEffect(() => {
+    if (staff) purgeExpiredVisuels().catch(() => undefined)
+  }, [staff])
 
   async function addPasskey() {
     setPasskeyMsg(null)
@@ -21,6 +27,7 @@ export function PanelLayout() {
     { to: '/painel/devis', label: 'Devis', icon: FileText, end: false },
     { to: '/painel', label: 'Commandes', icon: Package, end: true },
     { to: '/painel/produtos', label: 'Produits', icon: TShirt, end: false },
+    { to: '/painel/bibliotheque', label: 'Bibliothèque', icon: BookmarksSimple, end: false },
     ...(staff?.role === 'webmaster' ? [{ to: '/painel/cadastro', label: 'Utilisateurs', icon: Users, end: false }] : []),
   ]
 

@@ -159,11 +159,11 @@ function smtpReady() {
   return Boolean(Deno.env.get('SMTP_HOST') && Deno.env.get('SMTP_USER') && Deno.env.get('SMTP_PASS'))
 }
 
-async function sendMail(to: string, subject: string, text: string) {
+async function sendMail(to: string, subject: string, text: string, html?: string) {
   const user = Deno.env.get('SMTP_USER')!
   const port = Number(Deno.env.get('SMTP_PORT') ?? 465)
   const transport = nodemailer.createTransport({ host: Deno.env.get('SMTP_HOST'), port, secure: port === 465, auth: { user, pass: Deno.env.get('SMTP_PASS') } })
-  await transport.sendMail({ from: Deno.env.get('SMTP_FROM') ?? `Sarah Nani Créations <${user}>`, to, subject, text })
+  await transport.sendMail({ from: Deno.env.get('SMTP_FROM') ?? `Sarah Nani Créations <${user}>`, to, subject, text, html })
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -330,12 +330,23 @@ async function clientOtp(body: Record<string, unknown>) {
   })
   if (error) throw new HttpError(500, 'Code non enregistré')
 
+  // Formato reconhecido pelo Mail do iPhone (iOS 17+) e pelo Gmail: « code de vérification » + o código
+  // no assunto e no início do texto; a última linha liga o código ao domínio do site (autofill)
   const n = doc.snapshot.order_number
+  const host = new URL(SITE).host
   await sendMail(
     email,
-    `Votre code de signature : ${code}`,
-    `Bonjour,\n\nVoici votre code pour signer le contrat du devis n° ${n} de Sarah Nani Créations :\n\n${code}\n\n` +
-      'Ce code est valable 15 minutes. Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.\n\nSarah Nani Créations',
+    `Votre code de vérification : ${code}`,
+    `Votre code de vérification Sarah Nani Créations est : ${code}\n\n` +
+      `Saisissez-le pour signer le contrat du devis n° ${n}. Ce code est valable 15 minutes.\n` +
+      'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.\n\n' +
+      `@${host} #${code}`,
+    `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#f7f0e4;color:#2a211a">` +
+      `<p style="margin:0 0 8px;font-size:15px">Votre code de vérification Sarah Nani Créations est :</p>` +
+      `<p style="margin:0 0 16px;font-size:34px;font-weight:bold;letter-spacing:6px;color:#b4531f">${code}</p>` +
+      `<p style="margin:0 0 8px;font-size:14px">Saisissez-le pour signer le contrat du devis n° ${n}. Ce code est valable 15 minutes.</p>` +
+      `<p style="margin:0 0 16px;font-size:13px;color:#6b5d50">Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.</p>` +
+      `<p style="margin:0;font-size:12px;color:#6b5d50">@${host} #${code}</p></div>`,
   )
   return { sent: true, email: maskEmail(email) }
 }
