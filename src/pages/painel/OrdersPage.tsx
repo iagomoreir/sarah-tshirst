@@ -10,6 +10,7 @@ import { downloadText, itemsByModel, itemsToCsv, productionSummary, SIZE_ORDER }
 import { TECHNIQUES } from '../../lib/types'
 import { ease } from '../../components/ease'
 import { useAuth } from '../../auth/auth'
+import { ContratSection } from './ContratSection'
 
 type Mode = 'commandes' | 'devis'
 type OrderPatch = Partial<Pick<Order, 'status' | 'internal_note' | `${DevisStep}_ok_at`>>
@@ -165,6 +166,7 @@ export function OrdersPage({ mode }: { mode: Mode }) {
             canDelete={staff?.role === 'webmaster'}
             onClose={() => setOpenId(null)}
             onUpdate={(patch) => update(openOrder, patch)}
+            onReload={load}
             onDelete={() => remove(openOrder)}
           />
         )}
@@ -218,12 +220,14 @@ function OrderDetail({
   canDelete,
   onClose,
   onUpdate,
+  onReload,
   onDelete,
 }: {
   order: Order
   canDelete: boolean
   onClose: () => void
   onUpdate: (patch: OrderPatch) => void
+  onReload: () => void
   onDelete: () => void
 }) {
   const isDevis = order.status === 'devis'
@@ -314,6 +318,8 @@ function OrderDetail({
               <p className="muted small">Quand les 4 étapes sont validées, le devis devient automatiquement une commande.</p>
             </section>
           )}
+
+          {isDevis && <ContratSection order={order} onChanged={onReload} />}
 
           <div className="summary-table-wrap">
             <table className="summary-table">
