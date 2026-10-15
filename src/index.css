@@ -3110,3 +3110,310 @@ img {
 a.chip-button {
   text-decoration: none;
 }
+
+/* ---------------------------------------------------------------------
+   Visuels (artes do cliente): guia de qualidade, seleção, painel e bibliothèque
+   --------------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.visuels-card {
+  display: grid;
+  gap: 16px;
+}
+
+.visuels-card legend {
+  margin-bottom: 6px;
+}
+
+.visuels-intro {
+  clear: both;
+  margin: 0;
+}
+
+.visuels-guide {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: calc(var(--r-card) - 6px);
+  background: var(--surface-2);
+}
+
+.visuels-guide p,
+.visuels-guide ul {
+  margin: 0;
+}
+
+.visuels-guide ul {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.q-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  vertical-align: 1px;
+  flex-shrink: 0;
+}
+
+.q-dot.ok {
+  background: var(--ok);
+}
+
+.q-dot.mid {
+  background: var(--accent);
+}
+
+.q-dot.bad {
+  background: var(--danger);
+}
+
+.q-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.q-badge.bad {
+  color: var(--danger);
+}
+
+.visuels-picker {
+  display: grid;
+  gap: 12px;
+}
+
+.visuels-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.visuels-add .field {
+  flex: 0 1 240px;
+}
+
+.visuels-add .chip-button {
+  min-height: 46px;
+}
+
+.visuels-errors {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.visuels-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.visuel-item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px;
+  border-radius: calc(var(--r-card) - 8px);
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.visuel-thumb {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  aspect-ratio: 1;
+  border-radius: var(--r-thumb);
+  overflow: hidden;
+  color: var(--text-muted);
+  /* Damier: deixa ver a transparência do PNG */
+  background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 16px 16px;
+}
+
+.visuel-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.visuel-thumb.large {
+  width: 100%;
+}
+
+.visuel-info {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.visuel-info p {
+  margin: 0;
+}
+
+.visuel-name {
+  margin: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visuel-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.visuel-side select {
+  padding: 8px 10px;
+  border-radius: var(--r-field);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 14px;
+  max-width: 150px;
+}
+
+.visuels {
+  display: grid;
+  gap: 12px;
+}
+
+.visuels > .chip-button {
+  justify-self: start;
+}
+
+.visuels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.visuel-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 10px;
+  border-radius: calc(var(--r-card) - 6px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  min-width: 0;
+}
+
+.visuel-card p {
+  margin: 0;
+}
+
+.visuel-card .contrat-actions {
+  margin-top: 4px;
+}
+
+.visuels-add-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: calc(var(--r-card) - 6px);
+  background: var(--surface-2);
+}
+
+.visuels-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  margin-left: 6px;
+}
+
+.library-page {
+  display: grid;
+  gap: 16px;
+}
+
+.library-search {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-muted);
+}
+
+.library-search input {
+  border: 0;
+  background: transparent;
+  padding: 10px 0;
+  font-size: 16px;
+  min-width: 0;
+  width: 220px;
+  color: var(--text);
+}
+
+.library-search input:focus {
+  outline: none;
+}
+
+.library-group {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .visuel-item {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .visuel-thumb {
+    width: 56px;
+  }
+
+  .visuel-side {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+
+  .visuel-side select {
+    flex: 1;
+    max-width: none;
+  }
+
+  .visuels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .library-search {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .library-search input {
+    width: 100%;
+  }
+}

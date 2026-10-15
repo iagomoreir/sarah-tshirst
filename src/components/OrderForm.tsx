@@ -3,7 +3,9 @@ import { motion } from 'motion/react'
 import { PaperPlaneTilt } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { emptyLine, lineErrors, productionSummary, sheetToSummaryInput, toPayload, type Catalog, type SheetLine } from '../lib/orderSheet'
+import { sendClientVisuel, type PickedVisuel } from '../lib/visuels'
 import { OrderSheet } from './OrderSheet'
+import { VisuelsGuide, VisuelsPicker } from './VisuelsPicker'
 import { PillButton } from './motion'
 
 export type OrderResult = {
@@ -13,6 +15,8 @@ export type OrderResult = {
   contactName: string
   unit: string
   summary: ReturnType<typeof productionSummary>
+  visuelsSent: number
+  visuelsFailed: string[]
 }
 
 type Contact = { name: string; phone: string; email: string; unit: string; notes: string }
@@ -47,6 +51,8 @@ export function OrderForm({ catalog, mode, onDone }: { catalog: Catalog; mode: '
   })
   const [tried, setTried] = useState(false)
   const [sending, setSending] = useState(false)
+  const [progress, setProgress] = useState<string | null>(null)
+  const [visuels, setVisuels] = useState<PickedVisuel[]>([])
   const [error, setError] = useState<string | null>(null)
 
   // Rascunho local: um bon de commande de 40 linhas não pode se perder num F5
@@ -70,20 +76,39 @@ export function OrderForm({ catalog, mode, onDone }: { catalog: Catalog; mode: '
     if (bad >= 0) return setError(`Ligne ${lines.indexOf(filled[bad]) + 1} incomplète.`)
 
     setSending(true)
+    // Chave aleatória: libera o envio dos visuels deste pedido por 2 horas
+    const uploadKey = crypto.randomUUID()
     const { data, error: rpcError } = await supabase.rpc('create_order', {
-      p_contact: contact,
+      p_contact: { ...contact, upload_key: uploadKey },
       p_lines: toPayload(filled, catalog),
       p_source: mode,
     })
-    setSending(false)
     const row = Array.isArray(data) ? data[0] : data
     if (rpcError || !row) {
+      setSending(false)
       setError(rpcError?.message?.startsWith('Ligne') ? rpcError.message : 'La commande n’a pas pu être enregistrée. Réessayez dans un instant.')
       return
     }
 
+    // Pedido gravado: agora os arquivos, um por vez (falha de um não perde o pedido)
+    let visuelsSent = 0
+    const visuelsFailed: string[] = []
+    for (const [i, v] of visuels.entries()) {
+      setProgress(`Envoi des visuels ${i + 1}/${visuels.length}...`)
+      try {
+        await sendClientVisuel(v, uploadKey)
+        visuelsSent++
+      } catch {
+        visuelsFailed.push(v.file.name)
+      }
+    }
+    setProgress(null)
+    setSending(false)
+
     if (mode === 'site') saveDraft(null)
     onDone({
+      visuelsSent,
+      visuelsFailed,
       orderNumber: row.order_number,
       totalCents: row.total_cents,
       pieces: row.pieces,
@@ -131,12 +156,23 @@ export function OrderForm({ catalog, mode, onDone }: { catalog: Catalog; mode: '
 
       <OrderSheet catalog={catalog} lines={lines} onChange={setLines} showErrors={tried} />
 
+      <fieldset className="contact-card visuels-card">
+        <legend className="display">{mode === 'site' ? 'Vos visuels' : 'Visuels du client'}</legend>
+        <p className="muted small visuels-intro">
+          {mode === 'site'
+            ? 'Logo, insigne, dessin ou texte à imprimer : joignez vos fichiers ici. Pas encore prêts ? Envoyez la commande quand même, Sarah vous les demandera.'
+            : 'Fichiers reçus du client (facultatif). Vous pourrez aussi en ajouter plus tard dans le devis.'}
+        </p>
+        <VisuelsGuide />
+        <VisuelsPicker items={visuels} onChange={setVisuels} disabled={sending} />
+      </fieldset>
+
       <motion.div className="submit-bar glass" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         {error ? <p className="field-error" role="alert">{error}</p> : <p className="muted small">Merci de vérifier les tailles avant validation.</p>}
         <div className="submit-actions">
           <button type="button" className="link-button" onClick={reset}>Tout effacer</button>
           <PillButton type="submit" disabled={sending} icon={<PaperPlaneTilt size={16} weight="bold" />}>
-            {sending ? 'Envoi...' : mode === 'site' ? 'Envoyer la commande' : 'Enregistrer'}
+            {sending ? progress ?? 'Envoi...' : mode === 'site' ? 'Envoyer la commande' : 'Enregistrer'}
           </PillButton>
         </div>
       </motion.div>

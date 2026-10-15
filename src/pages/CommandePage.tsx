@@ -63,6 +63,16 @@ function Success({ result }: { result: OrderResult }) {
         {result.pieces} pièce{result.pieces > 1 ? 's' : ''}, total estimé {formatMoney(result.totalCents)}. Prévenez Sarah sur WhatsApp : elle vous envoie le devis
         à valider (prix, maquette, tailles et acompte de 50 %).
       </p>
+      {result.visuelsSent > 0 && (
+        <p className="muted">
+          {result.visuelsSent} visuel{result.visuelsSent > 1 ? 's' : ''} reçu{result.visuelsSent > 1 ? 's' : ''}.
+        </p>
+      )}
+      {result.visuelsFailed.length > 0 && (
+        <p className="notice error">
+          Ces fichiers n’ont pas pu être envoyés : {result.visuelsFailed.join(', ')}. Envoyez-les à Sarah sur WhatsApp.
+        </p>
+      )}
       <PillLink href={whatsappLink(STORE_WHATSAPP, text)} target="_blank" rel="noreferrer" icon={<WhatsappLogo size={16} weight="bold" />}>
         Envoyer sur WhatsApp
       </PillLink>
