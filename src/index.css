@@ -82,6 +82,13 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Faixa inclinada e manchas de fundo não podem criar rolagem lateral no celular.
+   Fica nos contêineres (na raiz, o clip desliga o position: sticky). */
+.store,
+.panel {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
@@ -1880,6 +1887,10 @@ img {
   align-self: center;
 }
 
+.panel-top {
+  display: none;
+}
+
 .panel-nav nav {
   display: flex;
   flex-direction: column;
@@ -2338,9 +2349,18 @@ img {
 
 @media (max-width: 900px) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     min-height: auto;
     padding-top: 108px;
+  }
+
+  .hero > * {
+    min-width: 0;
+  }
+
+  /* « PERSONNALISÉS » precisa caber numa linha em 320 px */
+  .hero h1 {
+    font-size: clamp(2rem, 10.4vw, 3.6rem);
   }
 
   .hero-art {
@@ -2376,48 +2396,102 @@ img {
     align-items: start;
   }
 
+  /* Celular: faixa fixa em cima (marca + ações) e barra de abas fixa embaixo */
   .panel {
-    grid-template-columns: 1fr;
+    display: block;
+  }
+
+  .panel-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: calc(8px + env(safe-area-inset-top)) 12px 8px 16px;
+    border-radius: 0 0 var(--r-card) var(--r-card);
+  }
+
+  .panel-top .panel-user {
+    margin: 0;
+    padding: 0;
+    gap: 4px;
+  }
+
+  .panel-top .panel-user p {
+    display: none;
   }
 
   .panel-nav {
-    top: 8px;
+    position: fixed;
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
     height: auto;
-    margin: 8px 8px 0;
+    margin: 0;
+    padding: 6px;
     flex-direction: row;
-    align-items: center;
-    padding: 8px;
-    gap: 8px;
-    border-radius: 999px;
+    gap: 0;
+    border-radius: 24px;
+    z-index: 15;
   }
 
-  .panel-nav .logo {
+  .panel-nav .logo,
+  .panel-nav .panel-user {
     display: none;
+  }
+
+  /* Vidro mais denso no celular: o conteúdo passa por baixo sem atrapalhar a leitura */
+  .panel-nav.glass,
+  .panel-top.glass {
+    background: color-mix(in srgb, var(--surface) 97%, transparent);
   }
 
   .panel-nav nav {
     flex-direction: row;
     flex: 1;
+    gap: 2px;
   }
 
   .panel-link {
-    padding: 10px 12px;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 2px 7px;
+    border-radius: 18px;
+    font-size: 11px;
+    line-height: 1.2;
   }
 
-  .panel-user {
-    margin: 0;
-    padding: 0;
+  .panel-link span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .panel-user p {
-    display: none;
+  .panel-link-bg {
+    border-radius: 18px;
+  }
+
+  .panel-main {
+    padding: 20px 16px calc(100px + env(safe-area-inset-bottom));
+  }
+
+  /* Barra « Enregistrer » do bon de commande fica acima da barra de abas */
+  .panel-main .submit-bar {
+    bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
   .passkey-msg {
     position: fixed;
     left: 16px;
     right: 16px;
-    bottom: 16px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
     z-index: 30;
     padding: 12px 16px;
     border-radius: var(--r-card);
@@ -2545,6 +2619,22 @@ img {
   .submit-actions {
     width: 100%;
     justify-content: space-between;
+    min-width: 0;
+  }
+
+  .submit-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .submit-actions .pill {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .submit-actions .link-button {
+    align-self: center;
   }
 
   .hero-ctas .pill {
@@ -2556,16 +2646,13 @@ img {
     border-radius: 0;
   }
 
-  .panel-link span {
-    display: none;
-  }
-
   .product-row {
     grid-template-columns: 56px 1fr;
   }
 
   .product-row > span {
     grid-column: 2;
+    justify-self: start;
   }
 
   .option-row {
@@ -2890,6 +2977,7 @@ img {
 /* ---------- eyebrow do hero (único no site) ---------- */
 .eyebrow {
   display: inline-block;
+  max-width: 100%;
   margin-bottom: 18px;
   padding: 6px 14px;
   border-radius: 999px;
